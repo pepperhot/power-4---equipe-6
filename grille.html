@@ -2,33 +2,55 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" type="text/css" href="style.css">
   <title>Puissance 4</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f6fb;
+      text-align: center;
+      margin-top: 80px;
+    }
+    table {
+      border-collapse: collapse;
+      margin: 0 auto;
+    }
+    td {
+      width: 120px;
+      height: 120px;
+      border: 4px solid #195;
+      background: #0099ff;
+      border-radius: 6px;
+    }
+    .cell::after {
+      content: "";
+      display: block;
+      width: 88px;
+      height: 88px;
+      margin: 6px auto;
+      border-radius: 50%;
+      background: white; /* case vide */
+    }
+  </style>
 </head>
 <body>
   <h1>Grille Puissance 4</h1>
   <table>
-    <!--1-->
+    <!-- 6 lignes -->
     <tr>
       <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
     </tr>
-    <!--2-->
     <tr>
       <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
     </tr>
-    <!--3-->
     <tr>
       <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
     </tr>
-    <!--4-->
     <tr>
       <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
     </tr>
-    <!--5-->
     <tr>
       <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
     </tr>
-    <!--6-->
     <tr>
       <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
     </tr>
