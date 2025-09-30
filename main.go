@@ -6,10 +6,13 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "grille.html")
-	})
-	log.Println("Serveur lancé sur http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	// Servir tous les fichiers du dossier courant avec le bon MIME type
+	fs := http.FileServer(http.Dir("."))
+	http.Handle("/", fs)
 
+	log.Println("Serveur lancé sur http://localhost:8080")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
