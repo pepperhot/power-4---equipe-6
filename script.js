@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function() {
         
         lignes.forEach(function(ligne) {
             let cases = ligne.querySelectorAll("td");
-            cases[colonneIndex].style.background = "#d9f0ff"; // couleur de base
+            cases[colonneIndex].style.background = ""; // remettre le style CSS par défaut
         });
     }
 });
