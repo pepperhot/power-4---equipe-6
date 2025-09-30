@@ -12,7 +12,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		if path == "/" {
-			path = "/homepage.html"
+			path = "/temp/homepage.html"
 		}
 
 		switch strings.ToLower(filepath.Ext(path)) {
@@ -29,7 +29,7 @@ func main() {
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	http.HandleFunc("/play", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "grille.html")
+		http.ServeFile(w, r, "./temp/grille.html")
 	})
 	http.HandleFunc("/click", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Colonne cliquée :", r.URL.Query().Get("col"))
