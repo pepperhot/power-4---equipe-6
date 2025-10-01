@@ -96,3 +96,17 @@ td {
   border-radius: 50%;
   background: white; /* case vide */
 }
+
+/* Jetons */
+.red::after {
+  background: red !important;
+}
+
+.yellow::after {
+  background: yellow !important;
+}
+
+/* Animation de chute */
+.falling::after {
+  transition: transform 0.2s linear;
+}
