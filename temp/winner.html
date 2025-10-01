@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Victoire !</title>
+    <link rel="stylesheet" href="/assets/static/style.css">
+    <style>
+        body.winner {
+            display: grid;
+            place-items: center;
+            background: radial-gradient(1200px 60% at 50% -10%, #dff1ff 0%, #f2f6fb 40%, #e8f0ff 100%);
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .winner-container {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 36px 48px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .winner-container h1 {
+            font-size: clamp(28px, 4vw, 42px);
+            margin-bottom: 20px;
+        }
+        .winner-container p {
+            font-size: clamp(18px, 2vw, 20px);
+            margin-bottom: 20px;
+        }
+        .btn-restart {
+            padding: 12px 24px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .scoreboard {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body class="winner">
+    <div class="winner-container">
+        <h1 id="winnerText">Joueur X a gagné !</h1>
+        <button class="btn-restart" id="restartBtn">Recommencer</button>
+        <div class="scoreboard">
+            <p>Score Rouge : <span id="scoreRed">0</span></p>
+            <p>Score Jaune : <span id="scoreYellow">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Récupération du gagnant et scores depuis le localStorage
+        const winner = localStorage.getItem("winner") || "R";
+        let scoreRed = parseInt(localStorage.getItem("scoreRed") || "0");
+        let scoreYellow = parseInt(localStorage.getItem("scoreYellow") || "0");
+
+        // Mettre à jour le score du gagnant
+        if (winner === "R") scoreRed++;
+        else if (winner === "J") scoreYellow++;
+
+        // Sauvegarder scores
+        localStorage.setItem("scoreRed", scoreRed);
+        localStorage.setItem("scoreYellow", scoreYellow);
+
+        // Affichage
+        document.getElementById("winnerText").textContent = `Joueur ${winner === "R" ? "Rouge" : "Jaune"} a gagné !`;
+        document.getElementById("scoreRed").textContent = scoreRed;
+        document.getElementById("scoreYellow").textContent = scoreYellow;
+
+        // Recommencer
+        document.getElementById("restartBtn").addEventListener("click", async () => {
+            await fetch("/reset"); // reset côté serveur
+            window.location.href = "/play"; // retour à la grille
+        });
+    </script>
+</body>
+</html>
