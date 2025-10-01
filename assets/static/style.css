@@ -1,27 +1,98 @@
 /* style.css */
-        body {
-      font-family: Arial, sans-serif;
-      background: #f2f6fb;
-      text-align: center;
-      margin-top: 80px;
-    }
-    table {
-      border-collapse: collapse;
-      margin: 0 auto;
-    }
-    td {
-      width: 120px;
-      height: 120px;
-      border: 4px solid #195;
-      background: #0099ff;
-      border-radius: 6px;
-    }
-    .cell::after {
-      content: "";
-      display: block;
-      width: 88px;
-      height: 88px;
-      margin: 6px auto;
-      border-radius: 50%;
-      background: white; /* case vide */
-    }
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f6fb;
+  text-align: center;
+  margin-top: 80px;
+}/* ---- Page d’accueil ---- */
+body.home {
+  display: grid;
+  place-items: center;
+  background: radial-gradient(1200px 60% at 50% -10%, #dff1ff 0%, #f2f6fb 40%, #e8f0ff 100%);
+}
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 36px;
+  max-width: 720px;
+  width: min(92%, 720px);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: saturate(130%) blur(6px);
+  border: 1px solid #e6eef7;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.home-container h1 {
+  font-size: clamp(28px, 4.2vw, 42px);
+  line-height: 1.2;
+  color: #0b2b4c;
+}
+
+.home-container p {
+  font-size: clamp(16px, 2.2vw, 18px);
+  color: #355b7a;
+}
+
+/* ---- Boutons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  border: none;
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.btn-play {
+  color: #fff;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.3);
+}
+
+.btn-play:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(2, 132, 199, 0.35);
+}
+
+.btn-play:active {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}
+
+/* ---- Grille (Puissance 4) ---- */
+table {
+  border-collapse: collapse;
+  margin: 40px auto;
+}
+
+td {
+  width: 120px;
+  height: 120px;
+  border: 4px solid #195;
+  background: #0099ff;
+  border-radius: 6px;
+}
+
+.cell::after {
+  content: "";
+  display: block;
+  width: 88px;
+  height: 88px;
+  margin: 6px auto;
+  border-radius: 50%;
+  background: white; /* case vide */
+}
