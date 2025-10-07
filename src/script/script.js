@@ -26,9 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
             isAnimating = true;
 
             try {
-                const currentPlayer = getNextPlayer(colIndex);
                 await fetch(`/click?col=${colIndex}`);
                 const grid = await (await fetch('/state')).json();
+                const currentPlayer = getPlayerFromGrid(grid, colIndex);
                 await playDropAnimation(currentPlayer, colIndex, grid);
                 updateGrid(grid);
                 checkWinner();
@@ -75,14 +75,14 @@ function findFinalRow(grid, colIndex) {
 }
 
 // --- JOUEUR COURANT CÔTÉ CLIENT ---
-function getNextPlayer(colIndex){
-    const lignes = document.querySelectorAll("table tr");
-    for(let row=lignes.length-1; row>=0; row--){
-        const td = lignes[row].cells[colIndex];
-        if(td.classList.contains('red')) return "J";
-        if(td.classList.contains('yellow')) return "R";
+function getPlayerFromGrid(grid, colIndex) {
+    // Trouve le jeton qui vient d'être placé (le plus haut dans la colonne)
+    for(let row = 0; row < grid.length; row++) {
+        if(grid[row][colIndex] !== "") {
+            return grid[row][colIndex]; // Retourne "R" ou "J"
+        }
     }
-    return "R";
+    return "R"; // Par défaut si colonne vide
 }
 
 // --- VÉRIFICATION DU GAGNANT ---
