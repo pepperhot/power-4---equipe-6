@@ -11,33 +11,61 @@
         <h1>Bienvenue sur la page d'accueil</h1>
         <p>Appuyez sur le bouton ci-dessous pour commencer une partie de Puissance Quatre.</p>
         
-        <section class="token-shop">
-            <h2>Magasin de jetons</h2>
-            <p>Choisissez vos couleurs de jetons :</p>
-            
-            <div class="player-colors">
-                <div class="color-selector">
-                    <label for="player1-color">Joueur 1 :</label>
-                    <input type="color" id="player1-color" value="#ff0000">
+        <section class="customization-panel">
+            <div class="token-shop">
+                <h2>Magasin de jetons</h2>
+                <p>Choisissez vos couleurs de jetons :</p>
+                
+                <div class="player-colors">
+                    <div class="color-selector">
+                        <label for="player1-color">Joueur 1 :</label>
+                        <input type="color" id="player1-color" value="#ff0000">
+                    </div>
+                    
+                    <div class="color-selector">
+                        <label for="player2-color">Joueur 2 :</label>
+                        <input type="color" id="player2-color" value="#ffff00">
+                    </div>
                 </div>
                 
-                <div class="color-selector">
-                    <label for="player2-color">Joueur 2 :</label>
-                    <input type="color" id="player2-color" value="#ffff00">
-                </div>
+                <button class="btn btn-save-colors">Sauvegarder les couleurs</button>
             </div>
-            
-            <button class="btn btn-save-colors">Sauvegarder les couleurs</button>
+
+            <div class="player-names">
+                <h2>Noms des joueurs</h2>
+                <p>Choisissez vos pseudos :</p>
+                
+                <div class="name-inputs">
+                    <div class="name-selector">
+                        <label for="player1-name">Joueur 1 :</label>
+                        <input type="text" id="player1-name" placeholder="Entrez votre pseudo" maxlength="20">
+                    </div>
+                    
+                    <div class="name-selector">
+                        <label for="player2-name">Joueur 2 :</label>
+                        <input type="text" id="player2-name" placeholder="Entrez votre pseudo" maxlength="20">
+                    </div>
+                </div>
+                
+                <button class="btn btn-save-names">Sauvegarder les pseudos</button>
+            </div>
         </section>
         
         <a class="btn btn-play" href="/play" aria-label="Jouer à Puissance Quatre">Jouer</a>
     </main>
     
     <script>
+        // Éléments pour les couleurs
         const saveBtn = document.querySelector('.btn-save-colors');
         const player1Color = document.getElementById('player1-color');
         const player2Color = document.getElementById('player2-color');
         
+        // Éléments pour les pseudos
+        const saveNamesBtn = document.querySelector('.btn-save-names');
+        const player1Name = document.getElementById('player1-name');
+        const player2Name = document.getElementById('player2-name');
+        
+        // Charger les couleurs sauvegardées
         if (localStorage.getItem('player1Color')) {
             player1Color.value = localStorage.getItem('player1Color');
         }
@@ -45,11 +73,41 @@
             player2Color.value = localStorage.getItem('player2Color');
         }
         
+        // Charger les pseudos sauvegardés
+        if (localStorage.getItem('player1Name')) {
+            player1Name.value = localStorage.getItem('player1Name');
+        }
+        if (localStorage.getItem('player2Name')) {
+            player2Name.value = localStorage.getItem('player2Name');
+        }
+        
+        // Sauvegarder les couleurs
         saveBtn.addEventListener('click', () => {
             localStorage.setItem('player1Color', player1Color.value);
             localStorage.setItem('player2Color', player2Color.value);
             alert('Couleurs sauvegardées !');
         });
+        
+        // Sauvegarder les pseudos
+        saveNamesBtn.addEventListener('click', () => {
+            const name1 = player1Name.value.trim();
+            const name2 = player2Name.value.trim();
+            
+            if (name1 === '' || name2 === '') {
+                alert('Veuillez entrer un pseudo pour chaque joueur !');
+                return;
+            }
+            
+            if (name1 === name2) {
+                alert('Les pseudos doivent être différents !');
+                return;
+            }
+            
+            localStorage.setItem('player1Name', name1);
+            localStorage.setItem('player2Name', name2);
+            alert('Pseudos sauvegardés !');
+        });
     </script>
+
 </body>
 </html>
