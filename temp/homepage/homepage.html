@@ -10,8 +10,46 @@
     <main class="home-container" role="main">
         <h1>Bienvenue sur la page d'accueil</h1>
         <p>Appuyez sur le bouton ci-dessous pour commencer une partie de Puissance Quatre.</p>
+        
+        <section class="token-shop">
+            <h2>Magasin de jetons</h2>
+            <p>Choisissez vos couleurs de jetons :</p>
+            
+            <div class="player-colors">
+                <div class="color-selector">
+                    <label for="player1-color">Joueur 1 :</label>
+                    <input type="color" id="player1-color" value="#ff0000">
+                </div>
+                
+                <div class="color-selector">
+                    <label for="player2-color">Joueur 2 :</label>
+                    <input type="color" id="player2-color" value="#ffff00">
+                </div>
+            </div>
+            
+            <button class="btn btn-save-colors">Sauvegarder les couleurs</button>
+        </section>
+        
         <a class="btn btn-play" href="/play" aria-label="Jouer à Puissance Quatre">Jouer</a>
     </main>
     
+    <script>
+        const saveBtn = document.querySelector('.btn-save-colors');
+        const player1Color = document.getElementById('player1-color');
+        const player2Color = document.getElementById('player2-color');
+        
+        if (localStorage.getItem('player1Color')) {
+            player1Color.value = localStorage.getItem('player1Color');
+        }
+        if (localStorage.getItem('player2Color')) {
+            player2Color.value = localStorage.getItem('player2Color');
+        }
+        
+        saveBtn.addEventListener('click', () => {
+            localStorage.setItem('player1Color', player1Color.value);
+            localStorage.setItem('player2Color', player2Color.value);
+            alert('Couleurs sauvegardées !');
+        });
+    </script>
 </body>
 </html>

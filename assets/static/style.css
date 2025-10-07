@@ -99,11 +99,11 @@ td {
 
 /* Jetons */
 .red::after {
-  background: red !important;
+  background: var(--player1-color, red) !important;
 }
 
 .yellow::after {
-  background: yellow !important;
+  background: var(--player2-color, yellow) !important;
 }
 
 /* Animation de chute */

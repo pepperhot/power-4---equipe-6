@@ -2,7 +2,15 @@ console.log("script.js chargé");
 
 let isAnimating = false;
 
+function applyPlayerColors() {
+    const player1Color = localStorage.getItem('player1Color') || '#ff0000';
+    const player2Color = localStorage.getItem('player2Color') || '#ffff00';
+    document.documentElement.style.setProperty('--player1-color', player1Color);
+    document.documentElement.style.setProperty('--player2-color', player2Color);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    applyPlayerColors();
     const lignes = document.querySelectorAll("table tr");
 
     // --- SURVOL DE COLONNE ---

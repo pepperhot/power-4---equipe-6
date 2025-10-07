@@ -48,8 +48,8 @@
         <h1 id="winnerText">Joueur X a gagné !</h1>
         <button class="btn-restart" id="restartBtn">Recommencer</button>
         <div class="scoreboard">
-            <p>Score Rouge : <span id="scoreRed">0</span></p>
-            <p>Score Jaune : <span id="scoreYellow">0</span></p>
+            <p>Score 1 : <span id="scoreRed">0</span></p>
+            <p>Score 2 : <span id="scoreYellow">0</span></p>
         </div>
     </div>
 
@@ -68,7 +68,7 @@
         localStorage.setItem("scoreYellow", scoreYellow);
 
         // Affichage
-        document.getElementById("winnerText").textContent = `Joueur ${winner === "R" ? "Rouge" : "Jaune"} a gagné !`;
+        document.getElementById("winnerText").textContent = `Joueur ${winner === "R" ? "1" : "2"} a gagné !`;
         document.getElementById("scoreRed").textContent = scoreRed;
         document.getElementById("scoreYellow").textContent = scoreYellow;
 
