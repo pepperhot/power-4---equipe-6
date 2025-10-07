@@ -48,14 +48,16 @@
         <h1 id="winnerText">Joueur X a gagné !</h1>
         <button class="btn-restart" id="restartBtn">Recommencer</button>
         <div class="scoreboard">
-            <p>Score 1 : <span id="scoreRed">0</span></p>
-            <p>Score 2 : <span id="scoreYellow">0</span></p>
+            <p><span id="nameRed">Joueur 1</span> : <span id="scoreRed">0</span></p>
+            <p><span id="nameYellow">Joueur 2</span> : <span id="scoreYellow">0</span></p>
         </div>
     </div>
 
     <script>
         // Récupération du gagnant et scores depuis le localStorage
-        const winner = localStorage.getItem("winner") || "R";
+    const winner = localStorage.getItem("winner") || "R";
+    const name1 = (localStorage.getItem('player1Name') || 'Joueur 1').trim();
+    const name2 = (localStorage.getItem('player2Name') || 'Joueur 2').trim();
         let scoreRed = parseInt(localStorage.getItem("scoreRed") || "0");
         let scoreYellow = parseInt(localStorage.getItem("scoreYellow") || "0");
 
@@ -68,9 +70,12 @@
         localStorage.setItem("scoreYellow", scoreYellow);
 
         // Affichage
-        document.getElementById("winnerText").textContent = `Joueur ${winner === "R" ? "1" : "2"} a gagné !`;
+    const winnerName = winner === "R" ? name1 : (winner === "J" ? name2 : "Le joueur");
+    document.getElementById("winnerText").textContent = `${winnerName} a gagné !`;
         document.getElementById("scoreRed").textContent = scoreRed;
         document.getElementById("scoreYellow").textContent = scoreYellow;
+    document.getElementById("nameRed").textContent = name1;
+    document.getElementById("nameYellow").textContent = name2;
 
         // Recommencer
         document.getElementById("restartBtn").addEventListener("click", async () => {
