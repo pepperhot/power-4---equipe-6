@@ -87,26 +87,6 @@
             localStorage.setItem('player2Color', player2Color.value);
             alert('Couleurs sauvegardées !');
         });
-        
-        // Sauvegarder les pseudos
-        saveNamesBtn.addEventListener('click', () => {
-            const name1 = player1Name.value.trim();
-            const name2 = player2Name.value.trim();
-            
-            if (name1 === '' || name2 === '') {
-                alert('Veuillez entrer un pseudo pour chaque joueur !');
-                return;
-            }
-            
-            if (name1 === name2) {
-                alert('Les pseudos doivent être différents !');
-                return;
-            }
-            
-            localStorage.setItem('player1Name', name1);
-            localStorage.setItem('player2Name', name2);
-            alert('Pseudos sauvegardés !');
-        });
     </script>
 
 </body>

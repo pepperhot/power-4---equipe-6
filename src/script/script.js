@@ -9,6 +9,17 @@ function applyPlayerColors() {
     document.documentElement.style.setProperty('--player2-color', player2Color);
 }
 
+async function loadPlayerNames() {
+    try {
+        const response = await fetch('/players');
+        const data = await response.json();
+        document.getElementById('name1').textContent = data.name1 || 'Joueur 1';
+        document.getElementById('name2').textContent = data.name2 || 'Joueur 2';
+    } catch(e) {
+        console.error("Erreur chargement noms :", e);
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     applyPlayerColors();
     const lignes = document.querySelectorAll("table tr");

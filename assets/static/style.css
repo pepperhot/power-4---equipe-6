@@ -87,6 +87,22 @@ td {
   border-radius: 6px;
 }
 
+.btn-retour {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #0099ff;
+  color: white;
+  margin-bottom: 20px;
+  
+}
+
+.btn-retour:hover {
+  background-color: #007acc;
+}
+
 .cell::after {
   content: "";
   display: block;
