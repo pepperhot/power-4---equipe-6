@@ -37,6 +37,10 @@
             font-weight: 700;
             cursor: pointer;
         }
+        .btn-back {
+            margin-top: 12px;
+            background: #64748b;
+        }
         .scoreboard {
             margin-top: 20px;
             font-size: 18px;
@@ -47,6 +51,7 @@
     <div class="winner-container">
         <h1 id="winnerText">Joueur X a gagné !</h1>
         <button class="btn-restart" id="restartBtn">Recommencer</button>
+    <button class="btn-restart btn-back" id="backBtn">Retour à l'accueil</button>
         <div class="scoreboard">
             <p><span id="nameRed">Joueur 1</span> : <span id="scoreRed">0</span></p>
             <p><span id="nameYellow">Joueur 2</span> : <span id="scoreYellow">0</span></p>
@@ -82,6 +87,11 @@
             await fetch("/reset"); // reset côté serveur
             window.location.href = "/play"; // retour à la grille
         });
+        // Retour à l'accueil
+        document.getElementById("backBtn").addEventListener("click", () => {
+            window.location.href = "/";
+        });
+
     </script>
 </body>
 </html>
