@@ -1,95 +1,149 @@
 <!DOCTYPE html>
-<html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Connexion - Puissance 4</title>
-        <link rel="stylesheet" href="/assets/static/style.css">
-    </head>
-<body class="home">
-    <main class="home-container" role="main">
-        <h1>Connexion</h1>
-        <p>Veuillez vous connecter pour accéder au jeu Puissance Quatre.</p>
-        
-        <section class="login-form">
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="username">Nom d'utilisateur :</label>
-                    <input type="text" id="username" name="username" placeholder="Entrez votre nom d'utilisateur" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Mot de passe :</label>
-                    <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" required>
-                </div>
-                
-                <button type="submit" class="btn btn-login">Se connecter</button>
-            </form>
-            
-            <div class="login-options">
-                <a href="#" class="forgot-password">Mot de passe oublié ?</a>
-                <p class="register-link">Pas encore de compte ? <a href="#" id="register-link">S'inscrire</a></p>
-            </div>
-        </section>
-    </main>
-    
-    <script>
-        const loginForm = document.getElementById('loginForm');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        
-        // Charger les identifiants sauvegardés (s'il y en a)
-        if (localStorage.getItem('savedUsername')) {
-            usernameInput.value = localStorage.getItem('savedUsername');
-        }
-        
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value.trim();
-            
-            // Validation des champs
-            if (username === '' || password === '') {
-                alert('Veuillez remplir tous les champs !');
-                return;
-            }
-            
-            if (username.length < 3) {
-                alert('Le nom d\'utilisateur doit contenir au moins 3 caractères !');
-                return;
-            }
-            
-            if (password.length < 4) {
-                alert('Le mot de passe doit contenir au moins 4 caractères !');
-                return;
-            }
-            
-            // Sauvegarder les informations de l'utilisateur
-            localStorage.setItem('currentUser', username);
-            localStorage.setItem('savedUsername', username);
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('loginTime', new Date().toISOString());
-            
-            // Simulation d'une connexion réussie
-            alert(`Bienvenue ${username} ! Connexion réussie.`);
-            
-            // Rediriger vers la page d'accueil
-            window.location.href = '/temp/homepage/homepage.html';
-        });
-        
-        // Gestion du lien d'inscription
-        document.getElementById('register-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Fonctionnalité d\'inscription à venir !');
-        });
-        
-        // Mot de passe oublié
-        document.querySelector('.forgot-password').addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Fonctionnalité de récupération de mot de passe à venir !');
-        });
-    </script>
+<html>
+  <head>
+    <title>Connexion / Inscription</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      .container {
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        width: 400px;
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+      }
+      .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #ddd;
+      }
+      .tab {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        font-size: 16px;
+        color: #666;
+        transition: all 0.3s;
+      }
+      .tab.active {
+        color: #667eea;
+        border-bottom: 3px solid #667eea;
+        margin-bottom: -2px;
+      }
+      .form-container {
+        display: none;
+      }
+      .form-container.active {
+        display: block;
+      }
+      input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 16px;
+      }
+      button[type="submit"] {
+        width: 100%;
+        padding: 12px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      button[type="submit"]:hover {
+        background: #5568d3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Bienvenue</h1>
+      
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('login')">Connexion</button>
+        <button class="tab" onclick="showTab('register')">Inscription</button>
+      </div>
 
-</body>
+      <!-- Formulaire de connexion -->
+      <div id="login" class="form-container active">
+        <form method="POST" action="/connect">
+          <input type="email" name="email" placeholder="Email" required>
+          <input type="password" name="password" placeholder="Mot de passe" required>
+          <button type="submit">Se connecter</button>
+        </form>
+      </div>
+
+      <!-- Formulaire d'inscription -->
+      <div id="register" class="form-container">
+        <form method="POST" action="/register">
+          <input type="text" name="pseudo" placeholder="Pseudo" required>
+          <input type="email" name="email" placeholder="Email" required>
+          <input type="password" name="password" placeholder="Mot de passe" required minlength="4">
+          <button type="submit">S'inscrire</button>
+        </form>
+      </div>
+    </div>
+
+  <script>
+      function showTab(tabName) {
+        document.querySelectorAll('.form-container').forEach(el => {
+          el.classList.remove('active');
+        });
+        
+        document.querySelectorAll('.tab').forEach(el => {
+          el.classList.remove('active');
+        });
+        
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+      }
+
+      // Gestion de la connexion
+      document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.querySelector('#login form');
+        const registerForm = document.querySelector('#register form');
+
+        loginForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          const formData = new FormData(this);
+          const response = await fetch('/connect', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await response.json();
+        });
+
+        registerForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          const formData = new FormData(this);
+          const response = await fetch('/register', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await response.json();
+        });
+      });
+    </script>
+  </body>
 </html>

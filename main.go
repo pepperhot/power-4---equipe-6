@@ -22,149 +22,277 @@ var (
 	db            *sql.DB
 )
 
-// ----------------------------
-// POINT D’ENTRÉE
-// ----------------------------
 func main() {
 	var err error
-	db, err = sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/power 4")
+	db, err = sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/power_4")
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
+
 	if err := db.Ping(); err != nil {
 		panic(err)
 	}
-	fmt.Println("✅ Connexion MySQL réussie !")
 
-	// Routes
 	http.HandleFunc("/", serveStatic)
-	http.Handle("/assets/static/", http.StripPrefix("/assets/static/", http.FileServer(http.Dir("./assets/static"))))
-	http.HandleFunc("/play", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "./temp/grid/grid.html") })
-	http.HandleFunc("/retour", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "./temp/homepage/homepage.html") })
-	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "./temp/login/login.html") })
-	http.HandleFunc("/state", getState)
 	http.HandleFunc("/click", handleClick)
-	http.HandleFunc("/winner", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]string{"winner": winner})
-	})
+	http.HandleFunc("/state", getState)
 	http.HandleFunc("/reset", resetGame)
+	http.HandleFunc("/login", serveLogin)
+	http.HandleFunc("/connect", handleLogin)
+	http.HandleFunc("/register", handleRegister)
 
-	log.Println("Serveur lancé sur http://localhost:8080")
+	fmt.Println("Serveur lancé sur http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-// ----------------------------
-// SERVE FILES
-// ----------------------------
 func serveStatic(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	if path == "/" {
-		path = "/temp/login/login.html"
+		path = "/index.html"
 	}
-	switch strings.ToLower(filepath.Ext(path)) {
-	case ".css":
-		w.Header().Set("Content-Type", "text/css")
-	case ".js":
-		w.Header().Set("Content-Type", "application/javascript")
+
+	ext := strings.ToLower(filepath.Ext(path))
+	switch ext {
 	case ".html":
-		w.Header().Set("Content-Type", "text/html")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	case ".css":
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
+	case ".js":
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+	case ".png":
+		w.Header().Set("Content-Type", "image/png")
+	case ".jpg", ".jpeg":
+		w.Header().Set("Content-Type", "image/jpeg")
 	}
+
 	http.ServeFile(w, r, "."+path)
 }
 
-// ----------------------------
-// CLICS : sauvegarde dans MySQL
-// ----------------------------
+func serveLogin(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./temp/login/login.html")
+}
+
+func handleLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+
+	var pseudo string
+	err := db.QueryRow("SELECT pseudo FROM login WHERE email = ? AND password = ?", email, password).Scan(&pseudo)
+
+	w.Header().Set("Content-Type", "application/json")
+	if err == sql.ErrNoRows {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Identifiants incorrects",
+		})
+		return
+	} else if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Erreur serveur",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"pseudo":  pseudo,
+		"message": "Connexion réussie",
+	})
+}
+
+func handleRegister(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	pseudo := r.FormValue("pseudo")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if len(pseudo) < 3 {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Le pseudo doit contenir au moins 3 caractères",
+		})
+		return
+	}
+
+	var exists int
+	err := db.QueryRow("SELECT COUNT(*) FROM login WHERE email = ?", email).Scan(&exists)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Erreur serveur",
+		})
+		return
+	}
+
+	if exists > 0 {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Cet email est déjà utilisé",
+		})
+		return
+	}
+
+	_, err = db.Exec("INSERT INTO login (pseudo, email, password) VALUES (?, ?, ?)", pseudo, email, password)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Erreur lors de l'inscription",
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"pseudo":  pseudo,
+		"message": "Inscription réussie",
+	})
+}
+
 func handleClick(w http.ResponseWriter, r *http.Request) {
-	if winner != "" {
-		http.Error(w, "Partie terminée", http.StatusBadRequest)
+	if r.Method != "POST" {
+		http.Error(w, "POST only", http.StatusMethodNotAllowed)
 		return
 	}
-	col, err := strconv.Atoi(r.URL.Query().Get("col"))
+
+	colStr := r.FormValue("col")
+	col, err := strconv.Atoi(colStr)
 	if err != nil || col < 0 || col >= cols {
-		http.Error(w, "colonne invalide", http.StatusBadRequest)
+		http.Error(w, "Invalid column", http.StatusBadRequest)
 		return
 	}
-	for row := rows - 1; row >= 0; row-- {
-		if grid[row][col] == "" {
-			grid[row][col] = currentPlayer
-			db.Exec("INSERT INTO grille (ligne, colonne, joueur) VALUES (?, ?, ?)", row, col, currentPlayer)
 
-			if checkVictory(currentPlayer, row, col) {
-				winner = currentPlayer
-			}
-			if currentPlayer == "R" {
-				currentPlayer = "J"
-			} else {
-				currentPlayer = "R"
-			}
-			fmt.Fprintf(w, "OK placé en ligne %d", row)
-			return
+	if winner != "" {
+		json.NewEncoder(w).Encode(map[string]string{"error": "Game over"})
+		return
+	}
+
+	row := -1
+	for i := rows - 1; i >= 0; i-- {
+		if grid[i][col] == "" {
+			row = i
+			break
 		}
 	}
+
+	if row == -1 {
+		json.NewEncoder(w).Encode(map[string]string{"error": "Column full"})
+		return
+	}
+
+	grid[row][col] = currentPlayer
+
+	_, err = db.Exec("INSERT INTO grille (ligne, colonne, joueur) VALUES (?, ?, ?)", row, col, currentPlayer)
+	if err != nil {
+		log.Println("DB error:", err)
+	}
+
+	if checkWin(row, col) {
+		winner = currentPlayer
+	} else {
+		if currentPlayer == "R" {
+			currentPlayer = "Y"
+		} else {
+			currentPlayer = "R"
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"grid":    grid,
+		"current": currentPlayer,
+		"winner":  winner,
+	})
 }
 
-// ----------------------------
-// STATE : lit depuis MySQL
-// ----------------------------
 func getState(w http.ResponseWriter, r *http.Request) {
-	rowsDB, _ := db.Query("SELECT ligne, colonne, joueur FROM grille")
-	defer rowsDB.Close()
-
-	// Réinitialise la grille
 	for i := 0; i < rows; i++ {
 		for j := 0; j < cols; j++ {
 			grid[i][j] = ""
 		}
 	}
+	currentPlayer = "R"
+	winner = ""
 
-	for rowsDB.Next() {
-		var l, c int
-		var j string
-		rowsDB.Scan(&l, &c, &j)
-		grid[l][c] = j
+	rows, err := db.Query("SELECT ligne, colonne, joueur FROM grille ORDER BY id")
+	if err != nil {
+		log.Println("Query error:", err)
+	} else {
+		defer rows.Close()
+		for rows.Next() {
+			var ligne, colonne int
+			var joueur string
+			if err := rows.Scan(&ligne, &colonne, &joueur); err == nil {
+				grid[ligne][colonne] = joueur
+			}
+		}
 	}
-	json.NewEncoder(w).Encode(grid)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"grid":    grid,
+		"current": currentPlayer,
+		"winner":  winner,
+	})
 }
 
-// ----------------------------
-// RESET : vide la table et la grille
-// ----------------------------
 func resetGame(w http.ResponseWriter, r *http.Request) {
-	db.Exec("TRUNCATE TABLE grille")
+	if r.Method != "POST" {
+		http.Error(w, "POST only", http.StatusMethodNotAllowed)
+		return
+	}
+
+	_, err := db.Exec("DELETE FROM grille")
+	if err != nil {
+		log.Println("Reset error:", err)
+	}
+
 	for i := 0; i < rows; i++ {
 		for j := 0; j < cols; j++ {
 			grid[i][j] = ""
 		}
 	}
-	currentPlayer, winner = "R", ""
+	currentPlayer = "R"
+	winner = ""
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
-// ----------------------------
-// CHECK VICTORY
-// ----------------------------
-func checkVictory(player string, lastRow, lastCol int) bool {
-	dirs := [][2]int{{0, 1}, {1, 0}, {1, 1}, {1, -1}}
-	for _, d := range dirs {
+func checkWin(row, col int) bool {
+	player := grid[row][col]
+
+	check := func(dr, dc int) bool {
 		count := 1
-		for s := 1; s < 4; s++ {
-			r, c := lastRow+s*d[0], lastCol+s*d[1]
+		for i := 1; i < 4; i++ {
+			r, c := row+dr*i, col+dc*i
 			if r < 0 || r >= rows || c < 0 || c >= cols || grid[r][c] != player {
 				break
 			}
 			count++
 		}
-		for s := 1; s < 4; s++ {
-			r, c := lastRow-s*d[0], lastCol-s*d[1]
+		for i := 1; i < 4; i++ {
+			r, c := row-dr*i, col-dc*i
 			if r < 0 || r >= rows || c < 0 || c >= cols || grid[r][c] != player {
 				break
 			}
 			count++
 		}
-		if count >= 4 {
-			return true
-		}
+		return count >= 4
 	}
-	return false
+
+	return check(0, 1) || check(1, 0) || check(1, 1) || check(1, -1)
 }
