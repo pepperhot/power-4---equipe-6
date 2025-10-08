@@ -22,7 +22,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		if path == "/" {
-			path = "/temp/homepage/homepage.html"
+			path = "/temp/login/login.html"
 		}
 		switch strings.ToLower(filepath.Ext(path)) {
 		case ".css":
@@ -38,6 +38,7 @@ func main() {
 	http.Handle("/assets/static/", http.StripPrefix("/assets/static/", http.FileServer(http.Dir("./assets/static"))))
 	http.HandleFunc("/play", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "./temp/grid/grid.html") })
 	http.HandleFunc("/retour", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "./temp/homepage/homepage.html") })
+	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) { http.ServeFile(w, r, "./temp/login/login.html") })
 	http.HandleFunc("/state", func(w http.ResponseWriter, r *http.Request) { json.NewEncoder(w).Encode(grid) })
 	http.HandleFunc("/click", handleClick)
 	http.HandleFunc("/winner", func(w http.ResponseWriter, r *http.Request) {

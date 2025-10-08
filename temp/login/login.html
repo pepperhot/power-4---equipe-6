@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Connexion - Puissance 4</title>
+        <link rel="stylesheet" href="/assets/static/style.css">
+    </head>
+<body class="home">
+    <main class="home-container" role="main">
+        <h1>Connexion</h1>
+        <p>Veuillez vous connecter pour accéder au jeu Puissance Quatre.</p>
+        
+        <section class="login-form">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Nom d'utilisateur :</label>
+                    <input type="text" id="username" name="username" placeholder="Entrez votre nom d'utilisateur" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mot de passe :</label>
+                    <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" required>
+                </div>
+                
+                <button type="submit" class="btn btn-login">Se connecter</button>
+            </form>
+            
+            <div class="login-options">
+                <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+                <p class="register-link">Pas encore de compte ? <a href="#" id="register-link">S'inscrire</a></p>
+            </div>
+        </section>
+    </main>
+    
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        
+        // Charger les identifiants sauvegardés (s'il y en a)
+        if (localStorage.getItem('savedUsername')) {
+            usernameInput.value = localStorage.getItem('savedUsername');
+        }
+        
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            // Validation des champs
+            if (username === '' || password === '') {
+                alert('Veuillez remplir tous les champs !');
+                return;
+            }
+            
+            if (username.length < 3) {
+                alert('Le nom d\'utilisateur doit contenir au moins 3 caractères !');
+                return;
+            }
+            
+            if (password.length < 4) {
+                alert('Le mot de passe doit contenir au moins 4 caractères !');
+                return;
+            }
+            
+            // Sauvegarder les informations de l'utilisateur
+            localStorage.setItem('currentUser', username);
+            localStorage.setItem('savedUsername', username);
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('loginTime', new Date().toISOString());
+            
+            // Simulation d'une connexion réussie
+            alert(`Bienvenue ${username} ! Connexion réussie.`);
+            
+            // Rediriger vers la page d'accueil
+            window.location.href = '/temp/homepage/homepage.html';
+        });
+        
+        // Gestion du lien d'inscription
+        document.getElementById('register-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Fonctionnalité d\'inscription à venir !');
+        });
+        
+        // Mot de passe oublié
+        document.querySelector('.forgot-password').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Fonctionnalité de récupération de mot de passe à venir !');
+        });
+    </script>
+
+</body>
+</html>
