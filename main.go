@@ -41,8 +41,9 @@ func main() {
 	http.HandleFunc("/login", serveLogin)
 	http.HandleFunc("/connect", handleLogin)
 	http.HandleFunc("/register", handleRegister)
+	http.HandleFunc("/homepage", serveHomepage)
 
-	fmt.Println("Serveur lancé sur http://localhost:8080")
+	fmt.Println("Serveur lancé sur http://localhost:8080/login")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -60,10 +61,6 @@ func serveStatic(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 	case ".js":
 		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-	case ".png":
-		w.Header().Set("Content-Type", "image/png")
-	case ".jpg", ".jpeg":
-		w.Header().Set("Content-Type", "image/jpeg")
 	}
 
 	http.ServeFile(w, r, "."+path)
@@ -71,6 +68,10 @@ func serveStatic(w http.ResponseWriter, r *http.Request) {
 
 func serveLogin(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./temp/login/login.html")
+}
+
+func serveHomepage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./temp/homepage/homepage.html")
 }
 
 func handleLogin(w http.ResponseWriter, r *http.Request) {
