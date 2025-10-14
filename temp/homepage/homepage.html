@@ -3,18 +3,17 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Accueil</title>
-        <link rel="stylesheet" href="/assets/static/style.css">
+        <title>Accueil - Puissance 4</title>
+        <link rel="stylesheet" href="/assets/static/homepage_style.css">
     </head>
-<body class="home">
-    <main class="home-container" role="main">
-        <h1>Bienvenue sur la page d'accueil</h1>
-        <p>Appuyez sur le bouton ci-dessous pour commencer une partie de Puissance Quatre.</p>
+<body>
+    <div class="container">
+        <h1>🎯 Puissance 4</h1>
+        <p>Configurez votre partie et amusez-vous !</p>
         
-        <section class="customization-panel">
+        <div class="customization-panel">
             <div class="token-shop">
-                <h2>Magasin de jetons</h2>
-                <p>Choisissez vos couleurs de jetons :</p>
+                <h2>🎨 Couleurs des jetons</h2>
                 
                 <div class="player-colors">
                     <div class="color-selector">
@@ -28,12 +27,11 @@
                     </div>
                 </div>
                 
-                <button class="btn btn-save-colors">Sauvegarder les couleurs</button>
+                <button class="btn-save-colors">Sauvegarder les couleurs</button>
             </div>
 
             <div class="player-names">
-                <h2>Noms des joueurs</h2>
-                <p>Choisissez vos pseudos :</p>
+                <h2>👥 Noms des joueurs</h2>
                 
                 <div class="name-inputs">
                     <div class="name-selector">
@@ -47,12 +45,12 @@
                     </div>
                 </div>
                 
-                <button class="btn btn-save-names">Sauvegarder les pseudos</button>
+                <button class="btn-save-names">Sauvegarder les pseudos</button>
             </div>
-        </section>
+        </div>
         
-        <a class="btn btn-play" href="/play" aria-label="Jouer à Puissance Quatre">Jouer</a>
-    </main>
+        <a class="btn-play" href="/temp/grid/grid.html">🚀 Commencer la partie</a>
+    </div>
     
     <script>
         // Éléments pour les couleurs
