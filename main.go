@@ -220,6 +220,7 @@ func handleClick(w http.ResponseWriter, r *http.Request) {
 }
 
 func getState(w http.ResponseWriter, r *http.Request) {
+	// Réinitialise la grille locale
 	for i := 0; i < rows; i++ {
 		for j := 0; j < cols; j++ {
 			grid[i][j] = ""
@@ -228,15 +229,16 @@ func getState(w http.ResponseWriter, r *http.Request) {
 	currentPlayer = "R"
 	winner = ""
 
-	rows, err := db.Query("SELECT ligne, colonne, joueur FROM grille ORDER BY id")
+	// ⚠️ Change "rows" en "dbRows" pour éviter le conflit
+	dbRows, err := db.Query("SELECT ligne, colonne, joueur FROM grille ORDER BY id")
 	if err != nil {
 		log.Println("Query error:", err)
 	} else {
-		defer rows.Close()
-		for rows.Next() {
+		defer dbRows.Close()
+		for dbRows.Next() {
 			var ligne, colonne int
 			var joueur string
-			if err := rows.Scan(&ligne, &colonne, &joueur); err == nil {
+			if err := dbRows.Scan(&ligne, &colonne, &joueur); err == nil {
 				grid[ligne][colonne] = joueur
 			}
 		}
@@ -249,7 +251,6 @@ func getState(w http.ResponseWriter, r *http.Request) {
 		"winner":  winner,
 	})
 }
-
 func resetGame(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "POST only", http.StatusMethodNotAllowed)
