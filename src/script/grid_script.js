@@ -37,14 +37,32 @@ document.addEventListener("DOMContentLoaded", () => {
             isAnimating = true;
 
             try {
-                await fetch(`/click?col=${colIndex}`);
-                const grid = await (await fetch('/state')).json();
-                const currentPlayer = getPlayerFromGrid(grid, colIndex);
-                await playDropAnimation(currentPlayer, colIndex, grid);
-                updateGrid(grid);
-                checkWinner();
-            } catch (e) { console.error("Erreur :", e); }
-            finally { isAnimating = false; }
+                const formData = new FormData();
+                formData.append('col', colIndex);
+                
+                const clickResponse = await fetch('/click', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const clickData = await clickResponse.json();
+                console.log("Réponse clic:", clickData); // Debug
+                
+                if (clickData.success) {
+                    updateGrid(clickData);
+                    
+                    if (clickData.winner) {
+                        localStorage.setItem("winner", clickData.winner);
+                        setTimeout(() => {
+                            window.location.href = "/temp/winner/winner.html";
+                        }, 1000);
+                    }
+                }
+            } catch (e) { 
+                console.error("Erreur :", e); 
+            } finally { 
+                isAnimating = false; 
+            }
         });
     }));
 
@@ -53,18 +71,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // --- CHARGEMENT ET MISE À JOUR DE LA GRILLE ---
 async function loadGrid() {
-    try { updateGrid(await (await fetch('/state')).json()); }
+    try { 
+        const response = await fetch('/state');
+        const data = await response.json();
+        console.log("Données reçues:", data); // Debug
+        updateGrid(data);
+    }
     catch(e){ console.error("Erreur chargement :", e); }
 }
 
-function updateGrid(grid) {
+function updateGrid(gridData) {
     const lignes = document.querySelectorAll("table tr");
-    grid.forEach((row, r) => row.forEach((cell, c) => {
-        const td = lignes[r].cells[c];
-        td.classList.remove('red','yellow');
-        if(cell==="R") td.classList.add('red');
-        else if(cell==="J") td.classList.add('yellow');
-    }));
+    const grid = gridData.grid || gridData; // Support both formats
+    
+    for(let r = 0; r < grid.length; r++) {
+        for(let c = 0; c < grid[r].length; c++) {
+            const td = lignes[r].cells[c];
+            td.classList.remove('red','yellow');
+            if(grid[r][c] === "R") {
+                td.classList.add('red');
+            } else if(grid[r][c] === "J") {
+                td.classList.add('yellow');
+            }
+        }
+    }
 }
 
 // --- ANIMATION DU JETON ---
