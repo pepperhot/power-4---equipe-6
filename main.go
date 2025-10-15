@@ -7,32 +7,18 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"power4/src/config"
+	"power4/src/database"
 	"strconv"
 	"strings"
-
-	_ "github.com/go-sql-driver/mysql"
-)
-
-const rows, cols = 6, 7
-
-var (
-	grid          [rows][cols]string
-	currentPlayer = "R"
-	winner        = ""
-	db            *sql.DB
 )
 
 func main() {
-	var err error
-	db, err = sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/power_4")
-	if err != nil {
+	// Initialisation de la base de données
+	if err := database.InitDatabase(); err != nil {
 		panic(err)
 	}
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		panic(err)
-	}
+	defer config.DB.Close()
 
 	http.HandleFunc("/", serveStatic)
 	http.HandleFunc("/click", handleClick)
@@ -220,7 +206,6 @@ func handleClick(w http.ResponseWriter, r *http.Request) {
 }
 
 func getState(w http.ResponseWriter, r *http.Request) {
-	// Réinitialise la grille locale
 	for i := 0; i < rows; i++ {
 		for j := 0; j < cols; j++ {
 			grid[i][j] = ""
@@ -229,16 +214,15 @@ func getState(w http.ResponseWriter, r *http.Request) {
 	currentPlayer = "R"
 	winner = ""
 
-	// ⚠️ Change "rows" en "dbRows" pour éviter le conflit
-	dbRows, err := db.Query("SELECT ligne, colonne, joueur FROM grille ORDER BY id")
+	rows, err := db.Query("SELECT ligne, colonne, joueur FROM grille ORDER BY id")
 	if err != nil {
 		log.Println("Query error:", err)
 	} else {
-		defer dbRows.Close()
-		for dbRows.Next() {
+		defer rows.Close()
+		for rows.Next() {
 			var ligne, colonne int
 			var joueur string
-			if err := dbRows.Scan(&ligne, &colonne, &joueur); err == nil {
+			if err := rows.Scan(&ligne, &colonne, &joueur); err == nil {
 				grid[ligne][colonne] = joueur
 			}
 		}
@@ -251,6 +235,7 @@ func getState(w http.ResponseWriter, r *http.Request) {
 		"winner":  winner,
 	})
 }
+
 func resetGame(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "POST only", http.StatusMethodNotAllowed)
