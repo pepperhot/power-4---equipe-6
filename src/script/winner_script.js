@@ -24,10 +24,10 @@ document.getElementById("nameYellow").textContent = name2;
 
 // Recommencer
 document.getElementById("restartBtn").addEventListener("click", async () => {
-    await fetch("/reset"); // reset côté serveur
-    window.location.href = "/play"; // retour à la grille
+    await fetch("/reset", { method: "POST" }); // reset côté serveur
+    window.location.href = "/temp/grid/grid.html"; // retour à la grille
 });
 // Retour à l'accueil
 document.getElementById("backBtn").addEventListener("click", () => {
-    window.location.href = "/";
+    window.location.href = "/homepage";
 });

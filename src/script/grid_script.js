@@ -13,15 +13,18 @@ async function loadPlayerNames() {
     try {
         const response = await fetch('/players');
         const data = await response.json();
-        document.getElementById('name1').textContent = data.name1 || 'Joueur 1';
-        document.getElementById('name2').textContent = data.name2 || 'Joueur 2';
+        const n1 = document.getElementById('name1');
+        const n2 = document.getElementById('name2');
+        if (n1) n1.textContent = data.name1 || 'Joueur 1';
+        if (n2) n2.textContent = data.name2 || 'Joueur 2';
     } catch(e) {
         console.error("Erreur chargement noms :", e);
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function initGridScript() {
     applyPlayerColors();
+    loadPlayerNames();
     const lignes = document.querySelectorAll("table tr");
 
     // --- SURVOL DE COLONNE ---
@@ -37,26 +40,41 @@ document.addEventListener("DOMContentLoaded", () => {
             isAnimating = true;
 
             try {
-                const formData = new FormData();
-                formData.append('col', colIndex);
-                
+                const params = new URLSearchParams();
+                params.append('col', String(colIndex));
+
                 const clickResponse = await fetch('/click', {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                    body: params
                 });
-                
+
+                if (!clickResponse.ok) {
+                    const text = await clickResponse.text();
+                    console.error('Erreur /click:', clickResponse.status, text);
+                    return;
+                }
+
                 const clickData = await clickResponse.json();
                 console.log("Réponse clic:", clickData); // Debug
                 
                 if (clickData.success) {
+                    try {
+                        const player = getPlayerFromGrid(clickData.grid || [], colIndex);
+                        await playDropAnimation(player, colIndex, clickData.grid || []);
+                    } catch (animErr) {
+                        console.warn('Animation échouée, mise à jour directe.', animErr);
+                    }
                     updateGrid(clickData);
-                    
+
                     if (clickData.winner) {
                         localStorage.setItem("winner", clickData.winner);
                         setTimeout(() => {
                             window.location.href = "/temp/winner/winner.html";
-                        }, 1000);
+                        }, 400);
                     }
+                } else {
+                    console.warn('Clic non pris en compte:', clickData);
                 }
             } catch (e) { 
                 console.error("Erreur :", e); 
@@ -67,12 +85,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }));
 
     loadGrid();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGridScript);
+} else {
+    initGridScript();
+}
 
 // --- CHARGEMENT ET MISE À JOUR DE LA GRILLE ---
 async function loadGrid() {
     try { 
         const response = await fetch('/state');
+        if (!response.ok) {
+            const text = await response.text();
+            console.error('Erreur /state:', response.status, text);
+            return;
+        }
         const data = await response.json();
         console.log("Données reçues:", data); // Debug
         updateGrid(data);
@@ -111,8 +140,11 @@ async function playDropAnimation(player, colIndex, grid) {
 }
 
 function findFinalRow(grid, colIndex) {
-    for(let row=0; row<grid.length; row++) if(grid[row][colIndex]!=="") return row-1;
-    return grid.length-1;
+    for (let row = 0; row < grid.length; row++) {
+        if (grid[row][colIndex] !== "") return row; // ligne où le jeton s'arrête
+    }
+    // si la colonne est encore vide (cas improbable juste après un clic), faire tomber jusqu'en bas
+    return grid.length - 1;
 }
 
 // --- JOUEUR COURANT CÔTÉ CLIENT ---
@@ -132,7 +164,7 @@ async function checkWinner() {
         const data = await (await fetch('/winner')).json();
         if(data.winner){
             localStorage.setItem("winner", data.winner);
-            window.location.href="/temp/winner/winner.html";
+            window.location.href="/temp/winner/winner_script.js";
         }
     } catch(e){ console.error("Erreur vérif gagnant :", e); }
 }

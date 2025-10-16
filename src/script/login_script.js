@@ -1,5 +1,5 @@
 
-function showTab(tabName) {
+function showTab(event, tabName) {
 document.querySelectorAll('.form-container').forEach(el => {
     el.classList.remove('active');
 });
