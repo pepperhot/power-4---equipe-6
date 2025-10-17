@@ -168,3 +168,9 @@ async function checkWinner() {
         }
     } catch(e){ console.error("Erreur vérif gagnant :", e); }
 }
+
+// Retour à l'accueil
+document.getElementById("retourBtn").addEventListener("click", async () => {
+    await fetch("/reset", { method: "POST" }); // reset côté serveur
+    window.location.href = "/temp/homepage/homepage.html"; // retour à l'accueil
+});
