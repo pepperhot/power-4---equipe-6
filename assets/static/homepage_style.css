@@ -89,6 +89,37 @@ button, .btn-play {
 button:hover, .btn-play:hover {
     background: #5568d3;
 }
+
+.btn-easy-mode {
+    background: #ffc107;
+    font-weight: bold;
+    width: 25%;
+}
+
+.btn-normale-mode {
+    background: #17a2b8;
+    font-weight: bold;
+    width: 25%;
+}
+
+.btn-hard-mode {
+    background: #dc3545;
+    font-weight: bold;
+    width: 25%;
+}
+
+.btn-gravities-mode {
+    background: #6f42c1;
+    font-weight: bold;
+    width: 25%;
+}
+
+.mode-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
 .btn-play {
     background: #28a745;
     font-weight: bold;

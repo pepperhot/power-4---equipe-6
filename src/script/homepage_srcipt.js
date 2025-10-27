@@ -28,5 +28,4 @@ if (localStorage.getItem('player2Name')) {
 saveBtn.addEventListener('click', () => {
     localStorage.setItem('player1Color', player1Color.value);
     localStorage.setItem('player2Color', player2Color.value);
-    alert('Couleurs sauvegardées !');
 });
