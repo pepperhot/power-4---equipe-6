@@ -120,6 +120,20 @@ button:hover, .btn-play:hover {
     margin-bottom: 20px;
 }
 
+/* Etat actif pour le bouton de mode sélectionné */
+.mode-buttons button.active {
+    outline: 3px solid rgba(0,0,0,0.2);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.9) inset, 0 0 0 4px rgba(0,0,0,0.2);
+    filter: brightness(0.95);
+}
+
+/* Supporte aria-pressed=true si la classe n'est pas appliquée */
+.mode-buttons button[aria-pressed="true"] {
+    outline: 3px solid rgba(0,0,0,0.2);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.9) inset, 0 0 0 4px rgba(0,0,0,0.2);
+    filter: brightness(0.95);
+}
+
 .btn-play {
     background: #28a745;
     font-weight: bold;

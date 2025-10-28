@@ -15,9 +15,11 @@ func HandleClick(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rows, cols := config.GetDimensions()
+
 	colStr := r.FormValue("col")
 	col, err := strconv.Atoi(colStr)
-	if err != nil || col < 0 || col >= config.COLS {
+	if err != nil || col < 0 || col >= cols {
 		http.Error(w, "Invalid column", http.StatusBadRequest)
 		return
 	}
@@ -28,7 +30,7 @@ func HandleClick(w http.ResponseWriter, r *http.Request) {
 	}
 
 	row := -1
-	for i := config.ROWS - 1; i >= 0; i-- {
+	for i := rows - 1; i >= 0; i-- {
 		if config.Grid[i][col] == "" {
 			row = i
 			break
@@ -68,24 +70,28 @@ func HandleClick(w http.ResponseWriter, r *http.Request) {
 
 // GetState récupère l'état actuel du jeu depuis la base de données
 func GetState(w http.ResponseWriter, r *http.Request) {
-	for i := 0; i < config.ROWS; i++ {
-		for j := 0; j < config.COLS; j++ {
+	rows, cols := config.GetDimensions()
+
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
 			config.Grid[i][j] = ""
 		}
 	}
 	config.CurrentPlayer = "R"
 	config.Winner = ""
 
-	rows, err := config.DB.Query("SELECT ligne, colonne, joueur FROM grille ORDER BY id")
+	dbRows, err := config.DB.Query("SELECT ligne, colonne, joueur FROM grille ORDER BY id")
 	if err != nil {
 		log.Println("Query error:", err)
 	} else {
-		defer rows.Close()
-		for rows.Next() {
+		defer dbRows.Close()
+		for dbRows.Next() {
 			var ligne, colonne int
 			var joueur string
-			if err := rows.Scan(&ligne, &colonne, &joueur); err == nil {
-				config.Grid[ligne][colonne] = joueur
+			if err := dbRows.Scan(&ligne, &colonne, &joueur); err == nil {
+				if ligne < rows && colonne < cols {
+					config.Grid[ligne][colonne] = joueur
+				}
 			}
 		}
 	}
@@ -105,13 +111,15 @@ func ResetGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rows, cols := config.GetDimensions()
+
 	_, err := config.DB.Exec("DELETE FROM grille")
 	if err != nil {
 		log.Println("Reset error:", err)
 	}
 
-	for i := 0; i < config.ROWS; i++ {
-		for j := 0; j < config.COLS; j++ {
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
 			config.Grid[i][j] = ""
 		}
 	}
@@ -124,25 +132,27 @@ func ResetGame(w http.ResponseWriter, r *http.Request) {
 
 // CheckWin vérifie si un joueur a gagné
 func CheckWin(row, col int) bool {
+	rows, cols := config.GetDimensions()
 	player := config.Grid[row][col]
+	target := config.GetWinLength()
 
 	check := func(dr, dc int) bool {
 		count := 1
-		for i := 1; i < 4; i++ {
+		for i := 1; i < target; i++ {
 			r, c := row+dr*i, col+dc*i
-			if r < 0 || r >= config.ROWS || c < 0 || c >= config.COLS || config.Grid[r][c] != player {
+			if r < 0 || r >= rows || c < 0 || c >= cols || config.Grid[r][c] != player {
 				break
 			}
 			count++
 		}
-		for i := 1; i < 4; i++ {
+		for i := 1; i < target; i++ {
 			r, c := row-dr*i, col-dc*i
-			if r < 0 || r >= config.ROWS || c < 0 || c >= config.COLS || config.Grid[r][c] != player {
+			if r < 0 || r >= rows || c < 0 || c >= cols || config.Grid[r][c] != player {
 				break
 			}
 			count++
 		}
-		return count >= 4
+		return count >= target
 	}
 
 	return check(0, 1) || check(1, 0) || check(1, 1) || check(1, -1)

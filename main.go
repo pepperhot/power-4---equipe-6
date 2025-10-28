@@ -28,6 +28,7 @@ func main() {
 	http.HandleFunc("/click", game.HandleClick)
 	http.HandleFunc("/state", game.GetState)
 	http.HandleFunc("/reset", game.ResetGame)
+	http.HandleFunc("/start", routes.StartGame)
 
 	fmt.Println("Serveur lancé sur http://localhost:3000/login")
 	log.Fatal(http.ListenAndServe(":3000", nil))

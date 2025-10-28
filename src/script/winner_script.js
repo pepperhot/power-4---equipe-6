@@ -24,8 +24,8 @@ document.getElementById("nameYellow").textContent = name2;
 
 // Recommencer
 document.getElementById("restartBtn").addEventListener("click", async () => {
-    await fetch("/reset", { method: "POST" }); // reset côté serveur
-    window.location.href = "/temp/grid/grid.html"; // retour à la grille
+    await fetch("/reset", { method: "POST" });
+    window.location.href = "/temp/homepage/homepage.html"; // revenir pour rechoisir le mode
 });
 // Retour à l'accueil
 document.getElementById("backBtn").addEventListener("click", async () => {
