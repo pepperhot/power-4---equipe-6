@@ -23,6 +23,8 @@ async function loadPlayerNames() {
 }
 
 function initGridScript() {
+    // Marque la dernière grille utilisée (standard)
+    try { localStorage.setItem('lastGrid', '/temp/grid/grid.html'); } catch(_) {}
     applyPlayerColors();
     loadPlayerNames();
     const lignes = document.querySelectorAll("table tr");
