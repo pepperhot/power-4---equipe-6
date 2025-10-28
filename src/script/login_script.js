@@ -1,4 +1,3 @@
-
 function showTab(event, tabName) {
 document.querySelectorAll('.form-container').forEach(el => {
     el.classList.remove('active');
@@ -69,12 +68,9 @@ registerForm.addEventListener('submit', async function(e) {
     
     if (data.success) {
         showMessage('register-message', '✅ ' + data.message + ' - Bienvenue ' + data.pseudo, true);
-        // Change vers l'onglet connexion après 1.5 secondes
         setTimeout(() => {
-        registerForm.reset();
-        showTab('login');
-        showMessage('login-message', 'Vous pouvez maintenant vous connecter', true);
-        }, 1500);
+        window.location.href = '/homepage';
+        }, 1000);
     } else {
         showMessage('register-message', '❌ ' + data.message, false);
     }
@@ -83,3 +79,17 @@ registerForm.addEventListener('submit', async function(e) {
     }
 });
 });
+
+// Charger la liste complète des pays via API
+fetch('https://restcountries.com/v3.1/all')
+    .then(response => response.json())
+    .then(data => {
+    const select = document.querySelector('select[name="pays"]');
+    const pays = data.map(country => country.name.common).sort();
+    pays.forEach(pays => {
+        const option = document.createElement('option');
+        option.value = pays;
+        option.textContent = pays;
+        select.appendChild(option);
+    });
+    });

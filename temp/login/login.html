@@ -29,9 +29,29 @@
       <div id="register" class="form-container">
         <div id="register-message" class="message"></div>
         <form method="POST" action="/register">
-          <input type="text" name="pseudo" placeholder="Pseudo" required>
-          <input type="email" name="email" placeholder="Email" required>
-          <input type="password" name="password" placeholder="Mot de passe" required minlength="4">
+          <input type="text" name="prenom" placeholder="Prenom" >
+          <input type="text" name="nom" placeholder="Nom" >
+          <select name="pays">
+            <option value="">Sélectionnez votre pays</option>
+            <option value="France">France</option>
+            <option value="Belgique">Belgique</option>
+            <option value="Suisse">Suisse</option>
+            <option value="Canada">Canada</option>
+            <option value="Luxembourg">Luxembourg</option>
+            <option value="Allemagne">Allemagne</option>
+            <option value="Espagne">Espagne</option>
+            <option value="Italie">Italie</option>
+            <option value="Portugal">Portugal</option>
+            <option value="Royaume-Uni">Royaume-Uni</option>
+            <option value="États-Unis">États-Unis</option>
+            <option value="Maroc">Maroc</option>
+            <option value="Algérie">Algérie</option>
+            <option value="Tunisie">Tunisie</option>
+            <option value="Autre">Autre</option>
+          </select>
+          <input type="text" name="pseudo" placeholder="Pseudo*" required>
+          <input type="email" name="email" placeholder="Email*" required>
+          <input type="password" name="password" placeholder="Mot de passe*" required>
           <button type="submit">S'inscrire</button>
         </form>
       </div>

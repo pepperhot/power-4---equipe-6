@@ -18,7 +18,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	var pseudo string
-	err := config.DB.QueryRow("SELECT pseudo FROM login WHERE email = ? AND password = ?", email, password).Scan(&pseudo)
+	var storedHash string
+	err := config.DB.QueryRow("SELECT pseudo, password FROM login WHERE email = ?", email).Scan(&pseudo, &storedHash)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err == sql.ErrNoRows {
@@ -31,6 +32,15 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
 			"message": "Erreur serveur",
+		})
+		return
+	}
+
+	// Vérifier le mot de passe
+	if !CheckPasswordHash(storedHash, password) {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Identifiants incorrects",
 		})
 		return
 	}
@@ -52,6 +62,9 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nickname := r.FormValue("prenom")
+	surname := r.FormValue("nom")
+	country := r.FormValue("pays")
 	pseudo := r.FormValue("pseudo")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
@@ -84,7 +97,18 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = config.DB.Exec("INSERT INTO login (pseudo, email, password) VALUES (?, ?, ?)", pseudo, email, password)
+	// Hacher le mot de passe avant de le stocker
+	hashed, hashErr := HashPassword(password)
+	if hashErr != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Erreur serveur",
+		})
+		return
+	}
+
+	_, err = config.DB.Exec("INSERT INTO login (nickname, surname, country, pseudo, email, password) VALUES (?, ?, ?, ?, ?, ?)",
+		nickname, surname, country, pseudo, email, hashed)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
@@ -92,6 +116,9 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	// Mettre à jour le pseudo du joueur 1 après inscription
+	config.Player1Name = pseudo
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,

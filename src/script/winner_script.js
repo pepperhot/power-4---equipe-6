@@ -22,11 +22,19 @@ document.getElementById("scoreYellow").textContent = scoreYellow;
 document.getElementById("nameRed").textContent = name1;
 document.getElementById("nameYellow").textContent = name2;
 
-// Recommencer
+// Recommencer (redirige vers la dernière grille jouée si connue)
 document.getElementById("restartBtn").addEventListener("click", async () => {
-    await fetch("/reset", { method: "POST" });
-    window.location.href = "/temp/homepage/homepage.html"; // revenir pour rechoisir le mode
+    const target = localStorage.getItem("lastGrid") || "/temp/grid/grideasy.html";
+    try {
+        const ctl = new AbortController();
+        const t = setTimeout(() => ctl.abort(), 1500);
+        await fetch("/reset", { method: "POST", signal: ctl.signal }); // reset côté serveur
+        clearTimeout(t);
+    } catch (_) {
+    }
+    window.location.href = target;
 });
+
 // Retour à l'accueil
 document.getElementById("backBtn").addEventListener("click", async () => {
     await fetch("/reset", { method: "POST" }); // reset côté serveur

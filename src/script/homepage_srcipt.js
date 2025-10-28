@@ -106,3 +106,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (player2Color) localStorage.setItem('player2Color', player2Color.value);
     });
 });
+
+// Boutons de difficulté (pour l'instant: Easy uniquement)
+const easyModeBtn = document.querySelector('.btn-easy-mode');
+const normalModeBtn = document.querySelector('.btn-normale-mode');
+const hardModeBtn = document.querySelector('.btn-hard-mode');
+const gravityModeBtn = document.querySelector('.btn-gravities-mode');
+
+if (easyModeBtn) easyModeBtn.addEventListener('click', () => {
+    // Active le mode facile et lance la partie
+    localStorage.setItem('gameMode', 'easy');
+    window.location.href = '/temp/grid/grideasy.html';
+});

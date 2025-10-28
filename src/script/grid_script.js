@@ -23,6 +23,8 @@ async function loadPlayerNames() {
 }
 
 function initGridScript() {
+    // Marque la dernière grille utilisée (standard)
+    try { localStorage.setItem('lastGrid', '/temp/grid/grid.html'); } catch(_) {}
     applyPlayerColors();
     loadPlayerNames();
     const lignes = document.querySelectorAll("table tr");
@@ -93,7 +95,7 @@ if (document.readyState === 'loading') {
     initGridScript();
 }
 
-// --- CHARGEMENT ET MISE À JOUR DE LA GRILLE ---
+// CHARGEMENT ET MISE À JOUR DE LA GRILLE 
 async function loadGrid() {
     try { 
         const response = await fetch('/state');
@@ -111,7 +113,7 @@ async function loadGrid() {
 
 function updateGrid(gridData) {
     const lignes = document.querySelectorAll("table tr");
-    const grid = gridData.grid || gridData; // Support both formats
+    const grid = gridData.grid || gridData; 
     
     for(let r = 0; r < grid.length; r++) {
         for(let c = 0; c < grid[r].length; c++) {
@@ -126,7 +128,7 @@ function updateGrid(gridData) {
     }
 }
 
-// --- ANIMATION DU JETON ---
+//  ANIMATION DU JETON 
 async function playDropAnimation(player, colIndex, grid) {
     const finalRow = findFinalRow(grid, colIndex);
     if(finalRow === -1) return;
