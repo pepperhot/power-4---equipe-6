@@ -21,7 +21,7 @@ const (
 	BLOCKS_HARD = 7
 
 	// Longueur d'alignement pour gagner selon le mode
-	WIN_EASY   = 4
+	WIN_EASY   = 3
 	WIN_NORMAL = 4
 	WIN_HARD   = 7
 )

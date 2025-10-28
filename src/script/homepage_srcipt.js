@@ -78,6 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (selectedMode === 'hard') {
                 window.location.href = '/temp/grid_hard/grid_hard.html';
+            } else if (selectedMode === 'easy') {
+                window.location.href = '/temp/grid/grideasy.html';
             } else {
                 window.location.href = '/temp/grid/grid.html';
             }
@@ -114,7 +116,9 @@ const hardModeBtn = document.querySelector('.btn-hard-mode');
 const gravityModeBtn = document.querySelector('.btn-gravities-mode');
 
 if (easyModeBtn) easyModeBtn.addEventListener('click', () => {
-    // Active le mode facile et lance la partie
     localStorage.setItem('gameMode', 'easy');
-    window.location.href = '/temp/grid/grideasy.html';
+    selectedMode = 'easy';
+    localStorage.setItem('selectedMode','easy');
+    // Laisser le bouton Play lancer /start puis rediriger
+    updateModeButtons();
 });

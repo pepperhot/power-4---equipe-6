@@ -24,6 +24,7 @@ func main() {
 	http.HandleFunc("/homepage", routes.ServeHomepage)
 	http.HandleFunc("/players", routes.GetPlayers)
 	http.HandleFunc("/winner", routes.GetWinner)
+	http.HandleFunc("/start", game.HandleStart)
 	http.HandleFunc("/click", game.HandleClick)
 	http.HandleFunc("/state", game.GetState)
 	http.HandleFunc("/reset", game.ResetGame)
