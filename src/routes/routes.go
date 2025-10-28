@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"path/filepath"
+	"power4/src/auth"
 	"power4/src/config"
+	"power4/src/game"
 	"strings"
 )
 
@@ -50,4 +52,17 @@ func GetWinner(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"winner": config.Winner,
 	})
+}
+
+func Redirection() {
+	http.HandleFunc("/", ServeStatic)
+	http.HandleFunc("/login", ServeLogin)
+	http.HandleFunc("/connect", auth.HandleLogin)
+	http.HandleFunc("/register", auth.HandleRegister)
+	http.HandleFunc("/homepage", ServeHomepage)
+	http.HandleFunc("/players", GetPlayers)
+	http.HandleFunc("/winner", GetWinner)
+	http.HandleFunc("/click", game.HandleClick)
+	http.HandleFunc("/state", game.GetState)
+	http.HandleFunc("/reset", game.ResetGame)
 }

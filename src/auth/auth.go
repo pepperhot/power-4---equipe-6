@@ -62,6 +62,9 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nickname := r.FormValue("prenom")
+	surname := r.FormValue("nom")
+	country := r.FormValue("pays")
 	pseudo := r.FormValue("pseudo")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
@@ -104,7 +107,8 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = config.DB.Exec("INSERT INTO login (pseudo, email, password) VALUES (?, ?, ?)", pseudo, email, hashed)
+	_, err = config.DB.Exec("INSERT INTO login (nickname, surname, country, pseudo, email, password) VALUES (?, ?, ?, ?, ?, ?)",
+		nickname, surname, country, pseudo, email, hashed)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
@@ -112,6 +116,9 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	// Mettre à jour le pseudo du joueur 1 après inscription
+	config.Player1Name = pseudo
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
