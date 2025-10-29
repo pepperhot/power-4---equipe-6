@@ -26,6 +26,10 @@ setTimeout(() => {
 
 // Gestion de la connexion
 document.addEventListener('DOMContentLoaded', function() {
+// S'assurer que l'onglet de connexion est actif par défaut
+document.getElementById('login').classList.add('active');
+document.querySelector('.tab').classList.add('active');
+
 const loginForm = document.querySelector('#login form');
 const registerForm = document.querySelector('#register form');
 
