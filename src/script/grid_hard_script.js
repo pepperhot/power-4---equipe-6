@@ -59,8 +59,15 @@ function initGridHardScript() {
 
                 const clickData = await clickResponse.json();
                 if (clickData.success) {
-                    const player = getPlayerFromGrid(clickData.grid || [], colIndex);
-                    await playDropAnimation(player, colIndex, clickData.grid || []);
+                    try {
+                        const gravity = (localStorage.getItem('selectedMode') === 'gravity');
+                        const player = getPlayerFromGrid(clickData.grid || [], colIndex);
+                        if (!gravity) {
+                            await playDropAnimation(player, colIndex, clickData.grid || []);
+                        }
+                    } catch (animErr) {
+                        console.warn('Animation échouée ou désactivée pour gravité.', animErr);
+                    }
                     updateGrid(clickData);
 
                     if (clickData.winner) {

@@ -23,16 +23,7 @@ async function loadPlayerNames() {
 }
 
 function initGridScript() {
-    // Marque la dernière grille utilisée (standard)
-    try { localStorage.setItem('lastGrid', '/temp/grid/grid.html'); } catch(_) {}
-    // Si mode gravité, on informe le backend
-    try {
-        const selectedMode = localStorage.getItem('selectedMode') || 'normal';
-        if (selectedMode === 'gravity') {
-            // on ne reset pas ici pour ne pas casser une partie déjà démarrée via Play
-            fetch('/start?mode=gravity');
-        }
-    } catch(_) {}
+    // Plus de gestion du mode gravity ici
     applyPlayerColors();
     loadPlayerNames();
     const lignes = document.querySelectorAll("table tr");
@@ -67,7 +58,7 @@ function initGridScript() {
 
                 const clickData = await clickResponse.json();
                 console.log("Réponse clic:", clickData); // Debug
-                
+
                 if (clickData.success) {
                     try {
                         const player = getPlayerFromGrid(clickData.grid || [], colIndex);
@@ -158,6 +149,7 @@ async function playDropAnimation(player, colIndex, grid) {
     const finalRow = getPlacedRow(grid, colIndex);
     if(finalRow === -1) return;
     const className = (player==="R")?"red":"yellow";
+    // Uniquement animation du mode normal (du haut vers la position du projeté)
     for(let row=0; row<=finalRow; row++){
         const td = document.querySelectorAll("table tr")[row].cells[colIndex];
         td.classList.add(className);
@@ -167,41 +159,21 @@ async function playDropAnimation(player, colIndex, grid) {
 }
 
 function getPlacedRow(grid, colIndex) {
-    const gravity = (localStorage.getItem('selectedMode') === 'gravity');
-    if (gravity) {
-        // Dernière case occupée en partant du haut (avant la première vide)
-        let last = -1;
-        for (let row = 0; row < grid.length; row++) {
-            if (grid[row][colIndex] === "") break;
-            last = row;
+    // Normal: le plus haut jeton (depuis le haut)
+    for(let row = 0; row < grid.length; row++) {
+        if(grid[row][colIndex] !== "") {
+            return row;
         }
-        return last;
-    } else {
-        // Première case occupée depuis le haut
-        for (let row = 0; row < grid.length; row++) {
-            if (grid[row][colIndex] !== "") return row;
-        }
-        return -1;
     }
+    return -1;
 }
 
 // --- JOUEUR COURANT CÔTÉ CLIENT ---
 function getPlayerFromGrid(grid, colIndex) {
-    const gravity = (localStorage.getItem('selectedMode') === 'gravity');
-    if (gravity) {
-        // Jeton placé = dernière case occupée depuis le haut
-        let last = -1;
-        for (let row = 0; row < grid.length; row++) {
-            if (grid[row][colIndex] === "") break;
-            last = row;
-        }
-        if (last >= 0) return grid[last][colIndex];
-    } else {
-        // Normal: le plus haut jeton (depuis le haut)
-        for(let row = 0; row < grid.length; row++) {
-            if(grid[row][colIndex] !== "") {
-                return grid[row][colIndex];
-            }
+    // Normal: le plus haut jeton (depuis le haut)
+    for(let row = 0; row < grid.length; row++) {
+        if(grid[row][colIndex] !== "") {
+            return grid[row][colIndex];
         }
     }
     return "R"; // Par défaut si colonne vide

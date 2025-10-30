@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (selectedMode === 'easy') {
                 window.location.href = '/temp/grid/grideasy.html';
             } else if (selectedMode === 'gravity') {
-                window.location.href = '/temp/grid/grid.html';
+                window.location.href = '/temp/grid/grid_gravity.html';
             } else {
                 window.location.href = '/temp/grid/grid.html';
             }
