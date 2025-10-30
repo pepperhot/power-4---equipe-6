@@ -184,27 +184,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveProfileBtn = document.getElementById('saveProfileBtn');
     const cancelProfileBtn = document.getElementById('cancelProfileBtn');
 
+    // Variable pour stocker les données du profil
+    let profile = { firstName: '', lastName: '', pseudo: '', avatar: '', bio: '', country: '' };
+
     // Fonction pour charger le profil depuis la DB via /profile
     async function loadProfileFromDB() {
         try {
             const res = await fetch('/profile');
             const data = await res.json();
             if (data.success) {
-                profile.firstName = data.firstName;
-                profile.lastName = data.lastName;
-                profile.pseudo = data.pseudo;
-                profile.country = data.country;
-                // Charger l'avatar depuis localStorage (la DB ne stocke pas les images)
-                const storedAvatar = localStorage.getItem('profileAvatar');
-                if (storedAvatar) profile.avatar = storedAvatar;
+                profile.firstName = data.firstName || '';
+                profile.lastName = data.lastName || '';
+                profile.pseudo = data.pseudo || '';
+                profile.country = data.country || '';
+                profile.avatar = data.avatar || '';
+                profile.bio = data.bio || '';
                 renderProfile();
             } else {
-                // Si pas d'utilisateur connecté, charger depuis localStorage
-                loadProfileFromLocalStorage();
+                // Si pas d'utilisateur connecté, ne rien afficher (pas de valeurs par défaut)
+                profile.firstName = '';
+                profile.lastName = '';
+                profile.pseudo = '';
+                renderProfile();
             }
         } catch (err) {
-            console.warn('Impossible de charger le profil depuis la DB, utilisation localStorage', err);
-            loadProfileFromLocalStorage();
+            console.warn('Impossible de charger le profil depuis la DB', err);
+            // Pas de fallback vers localStorage, on laisse vide
+            profile.firstName = '';
+            profile.lastName = '';
+            profile.pseudo = '';
+            renderProfile();
         }
     }
 
@@ -227,8 +236,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderProfile() {
         if (profileAvatar) {
-            if (profile.avatar) profileAvatar.src = profile.avatar;
-            else profileAvatar.src = '/assets/static/homepage_style/default-avatar.png';
+            if (profile.avatar) {
+                profileAvatar.src = profile.avatar;
+            } else {
+                profileAvatar.src = '';
+            }
         }
         if (profileFirstNameEl) profileFirstNameEl.textContent = profile.firstName || '';
         if (profileLastNameEl) profileLastNameEl.textContent = profile.lastName || '';
