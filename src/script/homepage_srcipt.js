@@ -13,8 +13,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnEasy = document.getElementById('easyBtn') || document.querySelector('.btn-easy-mode');
     const btnNormal = document.getElementById('normalBtn') || document.querySelector('.btn-normale-mode');
     const btnHard = document.getElementById('hardBtn') || document.querySelector('.btn-hard-mode');
+    const btnGravity = document.getElementById('gravityBtn') || document.querySelector('.btn-gravities-mode');
     const btnPlay = document.getElementById('playBtn') || document.querySelector('.btn-play');
     let selectedMode = localStorage.getItem('selectedMode') || 'normal';
+
+    function setMode(mode) {
+        selectedMode = mode;
+        try { localStorage.setItem('selectedMode', mode); } catch(_) {}
+        updateModeButtons();
+        console.log('[mode] sélectionné =', mode);
+    }
+
+    // Force la sélection visuelle immédiate et sans condition
+    function forceSelect(mode) {
+        selectedMode = mode;
+        try { localStorage.setItem('selectedMode', mode); } catch(_) {}
+        resetButtonVisuals();
+        if (mode === 'easy') markActive(btnEasy);
+        else if (mode === 'hard') markActive(btnHard);
+        else if (mode === 'gravity') markActive(btnGravity);
+        else markActive(btnNormal);
+    }
 
     function resetButtonVisuals() {
         if (btnEasy) {
@@ -41,6 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
             btnHard.style.filter = '';
             btnHard.textContent = 'Difficile';
         }
+        if (btnGravity) {
+            btnGravity.classList.remove('active');
+            btnGravity.setAttribute('aria-pressed','false');
+            btnGravity.style.outline = '';
+            btnGravity.style.boxShadow = '';
+            btnGravity.style.filter = '';
+            btnGravity.textContent = 'Gravité';
+        }
     }
 
     function markActive(btn) {
@@ -53,21 +80,51 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn === btnEasy) btnEasy.textContent = 'Facile (sélectionné)';
         if (btn === btnNormal) btnNormal.textContent = 'Normal (sélectionné)';
         if (btn === btnHard) btnHard.textContent = 'Difficile (sélectionné)';
+        if (btn === btnGravity) btnGravity.textContent = 'Gravité (sélectionné)';
     }
 
     function updateModeButtons() {
         resetButtonVisuals();
         if (selectedMode === 'easy') markActive(btnEasy);
         else if (selectedMode === 'hard') markActive(btnHard);
+        else if (selectedMode === 'gravity') markActive(btnGravity);
         else markActive(btnNormal);
     }
 
     // Appliquer l'état initial
     updateModeButtons();
 
-    if (btnEasy) btnEasy.addEventListener('click', () => { selectedMode = 'easy'; localStorage.setItem('selectedMode','easy'); updateModeButtons(); });
-    if (btnNormal) btnNormal.addEventListener('click', () => { selectedMode = 'normal'; localStorage.setItem('selectedMode','normal'); updateModeButtons(); });
-    if (btnHard) btnHard.addEventListener('click', () => { selectedMode = 'hard'; localStorage.setItem('selectedMode','hard'); updateModeButtons(); });
+    if (btnEasy) btnEasy.addEventListener('click', () => setMode('easy'));
+    if (btnNormal) btnNormal.addEventListener('click', () => setMode('normal'));
+    if (btnHard) btnHard.addEventListener('click', () => setMode('hard'));
+    if (btnGravity) {
+        const onSelectGravity = (e) => { e.preventDefault(); forceSelect('gravity'); };
+        btnGravity.addEventListener('click', onSelectGravity);
+        btnGravity.addEventListener('mousedown', onSelectGravity);
+        btnGravity.addEventListener('touchstart', onSelectGravity, { passive: true });
+    }
+
+    // Fallback: délégation d'évènement au cas où l'id/classe change
+    const modesContainer = document.querySelector('.mode-buttons');
+    if (modesContainer) {
+        modesContainer.addEventListener('click', (e) => {
+            const t = e.target;
+            if (!(t instanceof Element)) return;
+            const btn = t.closest('#gravityBtn, .btn-gravities-mode');
+            if (btn) {
+                forceSelect('gravity');
+                return;
+            }
+        });
+    }
+
+    // Sécurité ultime: capture au niveau document pour tout clic sur le bouton
+    document.addEventListener('click', (e) => {
+        const t = e.target;
+        if (!(t instanceof Element)) return;
+        const btn = t.closest('#gravityBtn, .btn-gravities-mode');
+        if (btn) forceSelect('gravity');
+    }, true);
 
     if (btnPlay) btnPlay.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -80,6 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = '/temp/grid_hard/grid_hard.html';
             } else if (selectedMode === 'easy') {
                 window.location.href = '/temp/grid/grideasy.html';
+            } else if (selectedMode === 'gravity') {
+                window.location.href = '/temp/grid/grid.html';
             } else {
                 window.location.href = '/temp/grid/grid.html';
             }
@@ -107,18 +166,4 @@ document.addEventListener('DOMContentLoaded', () => {
         if (player1Color) localStorage.setItem('player1Color', player1Color.value);
         if (player2Color) localStorage.setItem('player2Color', player2Color.value);
     });
-});
-
-// Boutons de difficulté (pour l'instant: Easy uniquement)
-const easyModeBtn = document.querySelector('.btn-easy-mode');
-const normalModeBtn = document.querySelector('.btn-normale-mode');
-const hardModeBtn = document.querySelector('.btn-hard-mode');
-const gravityModeBtn = document.querySelector('.btn-gravities-mode');
-
-if (easyModeBtn) easyModeBtn.addEventListener('click', () => {
-    localStorage.setItem('gameMode', 'easy');
-    selectedMode = 'easy';
-    localStorage.setItem('selectedMode','easy');
-    // Laisser le bouton Play lancer /start puis rediriger
-    updateModeButtons();
 });

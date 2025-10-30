@@ -25,6 +25,14 @@ async function loadPlayerNames() {
 function initGridScript() {
     // Marque la dernière grille utilisée (standard)
     try { localStorage.setItem('lastGrid', '/temp/grid/grid.html'); } catch(_) {}
+    // Si mode gravité, on informe le backend
+    try {
+        const selectedMode = localStorage.getItem('selectedMode') || 'normal';
+        if (selectedMode === 'gravity') {
+            // on ne reset pas ici pour ne pas casser une partie déjà démarrée via Play
+            fetch('/start?mode=gravity');
+        }
+    } catch(_) {}
     applyPlayerColors();
     loadPlayerNames();
     const lignes = document.querySelectorAll("table tr");
@@ -69,6 +77,14 @@ function initGridScript() {
                     }
                     updateGrid(clickData);
 
+                    // Fallback: détection locale 4 alignés
+                    const localWinner = findWinnerK(clickData.grid, 4);
+                    if (localWinner) {
+                        localStorage.setItem("winner", localWinner);
+                        setTimeout(() => { window.location.href = "/temp/winner/winner.html"; }, 400);
+                        return;
+                    }
+
                     if (clickData.winner) {
                         localStorage.setItem("winner", clickData.winner);
                         setTimeout(() => {
@@ -95,6 +111,9 @@ if (document.readyState === 'loading') {
     initGridScript();
 }
 
+// Sécurise l'affichage de la page de victoire si jamais un évènement est manqué
+try { setInterval(checkWinner, 1500); } catch(_) {}
+
 // CHARGEMENT ET MISE À JOUR DE LA GRILLE 
 async function loadGrid() {
     try { 
@@ -107,6 +126,12 @@ async function loadGrid() {
         const data = await response.json();
         console.log("Données reçues:", data); // Debug
         updateGrid(data);
+        // Fallback: détection locale si l'état charge un gagnant
+        const localWinner = findWinnerK(data.grid || data, 4);
+        if (localWinner) {
+            localStorage.setItem("winner", localWinner);
+            setTimeout(() => { window.location.href = "/temp/winner/winner.html"; }, 300);
+        }
     }
     catch(e){ console.error("Erreur chargement :", e); }
 }
@@ -130,7 +155,7 @@ function updateGrid(gridData) {
 
 //  ANIMATION DU JETON 
 async function playDropAnimation(player, colIndex, grid) {
-    const finalRow = findFinalRow(grid, colIndex);
+    const finalRow = getPlacedRow(grid, colIndex);
     if(finalRow === -1) return;
     const className = (player==="R")?"red":"yellow";
     for(let row=0; row<=finalRow; row++){
@@ -141,20 +166,42 @@ async function playDropAnimation(player, colIndex, grid) {
     }
 }
 
-function findFinalRow(grid, colIndex) {
-    for (let row = 0; row < grid.length; row++) {
-        if (grid[row][colIndex] !== "") return row; // ligne où le jeton s'arrête
+function getPlacedRow(grid, colIndex) {
+    const gravity = (localStorage.getItem('selectedMode') === 'gravity');
+    if (gravity) {
+        // Dernière case occupée en partant du haut (avant la première vide)
+        let last = -1;
+        for (let row = 0; row < grid.length; row++) {
+            if (grid[row][colIndex] === "") break;
+            last = row;
+        }
+        return last;
+    } else {
+        // Première case occupée depuis le haut
+        for (let row = 0; row < grid.length; row++) {
+            if (grid[row][colIndex] !== "") return row;
+        }
+        return -1;
     }
-    // si la colonne est encore vide (cas improbable juste après un clic), faire tomber jusqu'en bas
-    return grid.length - 1;
 }
 
 // --- JOUEUR COURANT CÔTÉ CLIENT ---
 function getPlayerFromGrid(grid, colIndex) {
-    // Trouve le jeton qui vient d'être placé (le plus haut dans la colonne)
-    for(let row = 0; row < grid.length; row++) {
-        if(grid[row][colIndex] !== "") {
-            return grid[row][colIndex]; // Retourne "R" ou "J"
+    const gravity = (localStorage.getItem('selectedMode') === 'gravity');
+    if (gravity) {
+        // Jeton placé = dernière case occupée depuis le haut
+        let last = -1;
+        for (let row = 0; row < grid.length; row++) {
+            if (grid[row][colIndex] === "") break;
+            last = row;
+        }
+        if (last >= 0) return grid[last][colIndex];
+    } else {
+        // Normal: le plus haut jeton (depuis le haut)
+        for(let row = 0; row < grid.length; row++) {
+            if(grid[row][colIndex] !== "") {
+                return grid[row][colIndex];
+            }
         }
     }
     return "R"; // Par défaut si colonne vide
@@ -166,13 +213,42 @@ async function checkWinner() {
         const data = await (await fetch('/winner')).json();
         if(data.winner){
             localStorage.setItem("winner", data.winner);
-            window.location.href="/temp/winner/winner_script.js";
+            window.location.href="/temp/winner/winner.html";
         }
     } catch(e){ console.error("Erreur vérif gagnant :", e); }
 }
 
+// Détection d'une victoire en K alignés (compte dans les 2 sens)
+function findWinnerK(grid, K) {
+    if (!grid || !grid.length) return "";
+    const R = grid.length, C = grid[0].length;
+    const dirs = [
+        [0, 1],
+        [1, 0],
+        [1, 1],
+        [1, -1],
+        [-1, -1],
+        [-1, 1]
+    ];
+    for (let r = 0; r < R; r++) {
+        for (let c = 0; c < C; c++) {
+            const p = grid[r][c];
+            if (p !== 'R' && p !== 'J') continue;
+            for (const [dr, dc] of dirs) {
+                let ok = true;
+                for (let i = 1; i < K; i++) {
+                    const rr = r + dr * i, cc = c + dc * i;
+                    if (rr < 0 || rr >= R || cc < 0 || cc >= C || grid[rr][cc] !== p) { ok = false; break; }
+                }
+                if (ok) return p;
+            }
+        }
+    }
+    return "";
+}
+
 // Retour à l'accueil
 document.getElementById("retourBtn").addEventListener("click", async () => {
-    await fetch("/reset", { method: "POST" }); // reset côté serveur
-    window.location.href = "/temp/homepage/homepage.html"; // retour à l'accueil
+    await fetch("/reset", { method: "POST" });
+    window.location.href = "/homepage";
 });

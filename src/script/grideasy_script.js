@@ -22,11 +22,16 @@ async function loadPlayerNames() {
   }
 }
 
-function initGridScript() {
+async function initGridScript() {
   // Marque explicitement le mode et la dernière grille pour la redirection après victoire
   try {
     localStorage.setItem('gameMode', 'easy');
     localStorage.setItem('lastGrid', '/temp/grid/grideasy.html');
+  } catch(_) {}
+  // Réinitialise la partie et informe le backend du mode (évite des coups résiduels en base)
+  try {
+    await fetch('/reset', { method: 'POST' });
+    await fetch('/start?mode=easy');
   } catch(_) {}
   applyPlayerColors();
   loadPlayerNames();
@@ -57,9 +62,8 @@ function initGridScript() {
         }
         const clickData = await clickResponse.json();
         try {
-          // Le joueur qui vient de jouer est l'inverse de current
-          const placed = (clickData.current === 'R') ? 'J' : 'R';
-          await playDropAnimation(placed, colIndex, clickData.grid || []);
+          const player = getPlayerFromGrid(clickData.grid || [], colIndex);
+          await playDropAnimation(player, colIndex, clickData.grid || []);
         } catch (e) { /* animation best-effort */ }
         updateGrid(clickData);
         // Victoire en 3 (client-side)
@@ -90,6 +94,17 @@ if (document.readyState === 'loading') {
 } else {
   initGridScript();
 }
+
+// Sécuriser l'affichage de la page winner si un événement est manqué
+try { setInterval(async () => {
+  try {
+    const data = await (await fetch('/winner')).json();
+    if (data && data.winner) {
+      localStorage.setItem('winner', data.winner);
+      window.location.href = '/temp/winner/winner.html';
+    }
+  } catch(_) {}
+}, 1500); } catch(_) {}
 
 async function loadGrid() {
   try {
@@ -124,7 +139,7 @@ function updateGrid(gridData) {
 }
 
 async function playDropAnimation(player, colIndex, grid) {
-  const finalRow = findFinalRow(grid, colIndex);
+  const finalRow = findPlacedRow(grid, colIndex);
   if (finalRow === -1) return;
   const className = (player === 'R') ? 'red' : 'yellow';
   for (let row = 0; row <= finalRow; row++) {
@@ -135,11 +150,21 @@ async function playDropAnimation(player, colIndex, grid) {
   }
 }
 
-function findFinalRow(grid, colIndex) {
+function findPlacedRow(grid, colIndex) {
   for (let row = 0; row < grid.length; row++) {
-    if (grid[row][colIndex] !== '') return row;
+    if (grid[row][colIndex] !== '') return row; // première case occupée = pion posé le plus haut
   }
-  return grid.length - 1;
+  return -1;
+}
+
+// Détermine le joueur placé dans la colonne après le coup
+function getPlayerFromGrid(grid, colIndex) {
+  for (let row = grid.length - 1; row >= 0; row--) {
+    if (grid[row][colIndex] !== '') {
+      return grid[row][colIndex];
+    }
+  }
+  return 'R';
 }
 
 // Détection d'une victoire en K alignés (compte dans les 2 sens pour chaque direction)
@@ -179,6 +204,6 @@ const retourBtn = document.getElementById('retourBtn');
 if (retourBtn) {
   retourBtn.addEventListener('click', async () => {
     await fetch('/reset', { method: 'POST' });
-    window.location.href = '/temp/homepage/homepage.html';
+    window.location.href = '/homepage';
   });
 }

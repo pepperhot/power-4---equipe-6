@@ -16,14 +16,20 @@ const (
 	COLS_NORMAL   = 7
 	BLOCKS_NORMAL = 5
 
+	// Mode gravité inverse (mêmes dimensions que normal)
+	ROWS_GRAVITY   = ROWS_NORMAL
+	COLS_GRAVITY   = COLS_NORMAL
+	BLOCKS_GRAVITY = BLOCKS_NORMAL
+
 	ROWS_HARD   = 7
 	COLS_HARD   = 8
 	BLOCKS_HARD = 7
 
 	// Longueur d'alignement pour gagner selon le mode
-	WIN_EASY   = 3
-	WIN_NORMAL = 4
-	WIN_HARD   = 7
+	WIN_EASY    = 3
+	WIN_NORMAL  = 4
+	WIN_HARD    = 7
+	WIN_GRAVITY = 4
 )
 
 // Mode de jeu actuel (par défaut "normal")
@@ -55,6 +61,8 @@ func GetDimensions() (int, int) {
 	switch CurrentMode {
 	case "easy":
 		return ROWS_EASY, COLS_EASY
+	case "gravity":
+		return ROWS_GRAVITY, COLS_GRAVITY
 	case "hard":
 		return ROWS_HARD, COLS_HARD
 	default: // normal
@@ -67,6 +75,8 @@ func GetStartingBlocks() int {
 	switch CurrentMode {
 	case "easy":
 		return BLOCKS_EASY
+	case "gravity":
+		return BLOCKS_GRAVITY
 	case "hard":
 		return BLOCKS_HARD
 	default:
@@ -79,6 +89,8 @@ func GetWinLength() int {
 	switch CurrentMode {
 	case "easy":
 		return WIN_EASY
+	case "gravity":
+		return WIN_GRAVITY
 	case "hard":
 		return WIN_HARD
 	default:

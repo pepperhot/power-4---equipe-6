@@ -30,10 +30,21 @@ func HandleClick(w http.ResponseWriter, r *http.Request) {
 	}
 
 	row := -1
-	for i := rows - 1; i >= 0; i-- {
-		if config.Grid[i][col] == "" {
-			row = i
-			break
+	if config.CurrentMode == "gravity" {
+		// Gravité inversée: on remplit depuis le haut
+		for i := 0; i < rows; i++ {
+			if config.Grid[i][col] == "" {
+				row = i
+				break
+			}
+		}
+	} else {
+		// Gravité normale: on remplit depuis le bas
+		for i := rows - 1; i >= 0; i-- {
+			if config.Grid[i][col] == "" {
+				row = i
+				break
+			}
 		}
 	}
 
