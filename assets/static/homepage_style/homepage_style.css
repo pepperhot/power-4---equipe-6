@@ -1,4 +1,5 @@
 body {
+    overflow-y: hidden;
     font-family: Arial, sans-serif;
     display: flex;
     justify-content: center;
@@ -15,7 +16,9 @@ body {
     border-radius: 10px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     max-width: 500px;
-    width: 100%;
+    width: 90%;
+    margin: 10%;
+
 }
 h1 {
     text-align: center;
@@ -141,4 +144,34 @@ button:hover, .btn-play:hover {
 }
 .btn-play:hover {
     background: #218838;
+}
+
+/* Profile area styles */
+.topbar { margin-bottom: -50px; }
+.profile-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.profile-display { display: flex; align-items: center; gap: 12px; }
+.profile-display img#profileAvatar { width: 128px; height: 128px; border-radius: 50%; object-fit: cover; background: #eee; border: 2px solid rgba(0,0,0,0.06); }
+.profile-info { display: flex; flex-direction: column; max-width: 280px; overflow: hidden; }
+.profile-names { font-weight: 700; color: #333; display: flex; gap: 6px; align-items: baseline; }
+.profile-names span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-pseudo { color: #666; font-size: 14px; }
+.btn-edit-profile { padding: 8px 12px; background: #667eea; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.profile-actions { min-width: 96px; display: flex; justify-content: flex-end; }
+
+.profile-modal.hidden { display: none; }
+.profile-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+.profile-modal-content { background: #fff; padding: 20px; width: 90%; max-width: 480px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+.profile-modal-content h2 { margin-top: 0; }
+.avatar-preview { display: flex; align-items: center; gap: 10px; margin: 10px 0 16px; }
+.avatar-preview img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: #f1f1f1; border: 1px solid #ddd; }
+.btn-remove-avatar { padding: 6px 8px; background: #dc3545; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+.modal-actions { display: flex; gap: 10px; margin-top: 12px; }
+.btn-save { background: #28a745; color: #fff; padding: 10px 12px; border-radius: 6px; border: none; cursor: pointer; }
+.btn-cancel { background: #6c757d; color: #fff; padding: 10px 12px; border-radius: 6px; border: none; cursor: pointer; }
+
+@media (max-width: 520px) {
+    .player-colors, .name-inputs { flex-direction: column; }
+    .mode-buttons { flex-direction: column; }
+    .profile-row { flex-direction: column; align-items: stretch; }
+    .profile-actions { justify-content: center; }
 }

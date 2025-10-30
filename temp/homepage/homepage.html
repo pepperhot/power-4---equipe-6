@@ -7,6 +7,56 @@
         <link rel="stylesheet" href="/assets/static/homepage_style/homepage_style.css">
     </head>
 <body>
+    <!-- Profile display (hard-coded initial values) -->
+    <header class="topbar">
+        <div class="container profile-row">
+            <div class="profile-display">
+                <img id="profileAvatar" src="" >
+                <div class="profile-info">
+                    <div class="profile-names">
+                        <span id="profileFirstName"></span>
+                        <span id="profileLastName"></span>
+                    </div>
+                    <div id="profilePseudo" class="profile-pseudo"></div>
+                </div>
+            </div>
+            <div class="profile-actions">
+                <button id="editProfileBtn" class="btn-edit-profile">Modifier</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Modal / panneau édition profil (caché par défaut) -->
+    <div id="profileModal" class="profile-modal hidden" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+        <div class="profile-modal-content">
+            <h2 id="profileModalTitle">Modifier le profil</h2>
+
+            <label for="profileFirstNameInput">Prénom</label>
+            <input type="text" id="profileFirstNameInput" maxlength="30" placeholder="Prénom">
+
+            <label for="profileLastNameInput">Nom</label>
+            <input type="text" id="profileLastNameInput" maxlength="30" placeholder="Nom">
+
+            <label for="profilePseudoInput">Pseudo</label>
+            <input type="text" id="profilePseudoInput" maxlength="20" placeholder="Pseudo">
+
+            <label for="profileAvatarInput">Avatar</label>
+            <input type="file" id="profileAvatarInput" accept="image/*">
+
+            <div class="avatar-preview">
+                <img id="avatarPreview" src="" alt="Aperçu avatar">
+                <button id="removeAvatarBtn" type="button" class="btn-remove-avatar">Supprimer</button>
+            </div>
+
+            <label for="profileBioInput">Bio</label>
+            <textarea id="profileBioInput" maxlength="160" placeholder="Une courte bio (optionnel)"></textarea>
+
+            <div class="modal-actions">
+                <button id="saveProfileBtn" class="btn-save">Enregistrer</button>
+                <button id="cancelProfileBtn" class="btn-cancel">Annuler</button>
+            </div>
+        </div>
+    </div>
     <div class="container">
         <h1>🎯 Puissance 4</h1>
         <p>Configurez votre partie et amusez-vous !</p>
