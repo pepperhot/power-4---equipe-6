@@ -217,23 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Fonction pour charger depuis localStorage en fallback
-    function loadProfileFromLocalStorage() {
-        try {
-            const fn = localStorage.getItem('profileFirstName');
-            const ln = localStorage.getItem('profileLastName');
-            const pseudo = localStorage.getItem('profilePseudo');
-            const storedAvatar = localStorage.getItem('profileAvatar');
-            const storedBio = localStorage.getItem('profileBio');
-            if (fn) profile.firstName = fn;
-            if (ln) profile.lastName = ln;
-            if (pseudo) profile.pseudo = pseudo;
-            if (storedAvatar) profile.avatar = storedAvatar;
-            if (storedBio) profile.bio = storedBio;
-        } catch (e) { console.warn('Impossible de lire profile depuis localStorage', e); }
-        renderProfile();
-    }
-
     function renderProfile() {
         if (profileAvatar) {
             if (profile.avatar) {
