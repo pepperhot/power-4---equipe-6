@@ -4,28 +4,9 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Accueil - Puissance 4</title>
-        <link rel="stylesheet" href="/assets/static/homepage_style/homepage_style.css">
+        <link rel="stylesheet" href="/assets/static/homepage_style/homepage_style.css?v=11">
     </head>
 <body>
-    <!-- Profile display (hard-coded initial values) -->
-    <header class="topbar">
-        <div class="container profile-row">
-            <div class="profile-display">
-                <img id="profileAvatar" src="" >
-                <div class="profile-info">
-                    <div class="profile-names">
-                        <span id="profileFirstName"></span>
-                        <span id="profileLastName"></span>
-                    </div>
-                    <div id="profilePseudo" class="profile-pseudo"></div>
-                </div>
-            </div>
-            <div class="profile-actions">
-                <button id="editProfileBtn" class="btn-edit-profile">Modifier</button>
-            </div>
-        </div>
-    </header>
-
     <!-- Modal / panneau édition profil (caché par défaut) -->
     <div id="profileModal" class="profile-modal hidden" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
         <div class="profile-modal-content">
@@ -57,57 +38,236 @@
             </div>
         </div>
     </div>
-    <div class="container">
-        <h1>🎯 Puissance 4</h1>
-        <p>Configurez votre partie et amusez-vous !</p>
-        
-        <div class="customization-panel">
-            <div class="token-shop">
-                <h2>🎨 Couleurs des jetons</h2>
-                
-                <div class="player-colors">
-                    <div class="color-selector">
-                        <label for="player1-color">Joueur 1 :</label>
-                        <input type="color" id="player1-color" value="#ff0000">
+
+    <!-- Layout principal avec trois colonnes -->
+    <div class="main-layout">
+        <!-- Colonne gauche : Profil -->
+        <div class="left-column">
+            <div class="profile-section">
+                <div class="profile-display">
+                    <div class="profile-avatar-container">
+                        <img id="profileAvatar" src="https://picsum.photos/seed/default-avatar/120/120.jpg" alt="Photo de profil">
+                        <div class="profile-avatar-placeholder">
+                            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span>Aucune photo</span>
+                        </div>
                     </div>
-                    
-                    <div class="color-selector">
-                        <label for="player2-color">Joueur 2 :</label>
-                        <input type="color" id="player2-color" value="#ffff00">
+                    <div class="profile-info">
+                        <div class="profile-names">
+                            <span id="profileFirstName">Prénom</span>
+                            <span id="profileLastName">Nom</span>
+                        </div>
+                        <div id="profilePseudo" class="profile-pseudo">@pseudo</div>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <button id="editProfileBtn" class="btn-edit-profile">✏️ Modifier</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne centre : Menu de jeu -->
+        <div class="center-column">
+            <div class="game-menu">
+                <h1>🎮 Puissance 4</h1>
+                <p>Configurez votre partie et amusez-vous !</p>
+                
+                <div class="customization-panel">
+                    <div class="token-shop">
+                        <h2>🎨 Couleurs des jetons</h2>
+                        
+                        <div class="player-colors">
+                            <div class="color-selector">
+                                <label for="player1-color">Joueur 1 :</label>
+                                <input type="color" id="player1-color" value="#ff0000">
+                            </div>
+                            
+                            <div class="color-selector">
+                                <label for="player2-color">Joueur 2 :</label>
+                                <input type="color" id="player2-color" value="#ffff00">
+                            </div>
+                        </div>
+                        
+                        <button class="btn-save-colors">Sauvegarder les couleurs</button>
+                    </div>
+
+                    <div class="player-names">
+                        <h2>👥 Noms des joueurs</h2>
+                        
+                        <div class="name-inputs">
+                            <div class="name-selector">
+                                <label for="player1-name">Joueur 1 :</label>
+                                <input type="text" id="player1-name" placeholder="Entrez votre pseudo" maxlength="20">
+                            </div>
+                            
+                            <div class="name-selector">
+                                <label for="player2-name">Joueur 2 :</label>
+                                <input type="text" id="player2-name" placeholder="Entrez votre pseudo" maxlength="20">
+                            </div>
+                        </div>
+                        
+                        <button class="btn-save-names">Sauvegarder les pseudos</button>
                     </div>
                 </div>
                 
-                <button class="btn-save-colors">Sauvegarder les couleurs</button>
-            </div>
-
-            <div class="player-names">
-                <h2>👥 Noms des joueurs</h2>
-                
-                <div class="name-inputs">
-                    <div class="name-selector">
-                        <label for="player1-name">Joueur 1 :</label>
-                        <input type="text" id="player1-name" placeholder="Entrez votre pseudo" maxlength="20">
-                    </div>
-                    
-                    <div class="name-selector">
-                        <label for="player2-name">Joueur 2 :</label>
-                        <input type="text" id="player2-name" placeholder="Entrez votre pseudo" maxlength="20">
-                    </div>
+                <div class="mode-buttons">
+                    <button type="button" class="btn-easy-mode" id="easyBtn">Facile</button>
+                    <button type="button" class="btn-normale-mode" id="normalBtn">Normal</button>
+                    <button type="button" class="btn-hard-mode" id="hardBtn">Difficile</button>
+                    <button type="button" id="gravityBtn" class="btn-gravities-mode">Gravité</button>
                 </div>
-                
-                <button class="btn-save-names">Sauvegarder les pseudos</button>
+
+                <button type="button" class="btn-play" id="playBtn">🚀 Commencer la partie</button>
             </div>
         </div>
-        <div class="mode-buttons">
-            <button type="button" class="btn-easy-mode" id="easyBtn">Facile</button>
-            <button type="button" class="btn-normale-mode" id="normalBtn">Normal</button>
-            <button type="button" class="btn-hard-mode" id="hardBtn">Difficile</button>
-            <button type="button" id="gravityBtn" class="btn-gravities-mode">Gravité</button>
-        </div>
 
-        
-        <button type="button" class="btn-play" id="playBtn">🚀 Commencer la partie</button>
+        <!-- Colonne droite : Espace vide -->
+        <div class="right-column">
+            <!-- Espace vide pour équilibre visuel -->
+        </div>
     </div>
-    <script src="/src/script/homepage_srcipt.js?v=gravity1"></script>
+    <script>
+        // Gérer l'affichage du placeholder de l'avatar
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatar = document.getElementById('profileAvatar');
+            const placeholder = document.querySelector('.profile-avatar-placeholder');
+            
+            function updatePlaceholderVisibility() {
+                if (avatar && placeholder) {
+                    if (!avatar.src || avatar.src === '' || avatar.src.includes('about:blank') || avatar.src.includes('picsum.photos/seed/default-avatar')) {
+                        placeholder.style.display = 'flex';
+                    } else {
+                        placeholder.style.display = 'none';
+                    }
+                }
+            }
+            
+            // Vérifier au chargement
+            updatePlaceholderVisibility();
+            
+            // Vérifier quand l'image change
+            if (avatar) {
+                avatar.addEventListener('load', updatePlaceholderVisibility);
+                avatar.addEventListener('error', updatePlaceholderVisibility);
+            }
+            
+            // Gérer le bouton Modifier le profil
+            const editProfileBtn = document.getElementById('editProfileBtn');
+            const profileModal = document.getElementById('profileModal');
+            const cancelProfileBtn = document.getElementById('cancelProfileBtn');
+            const saveProfileBtn = document.getElementById('saveProfileBtn');
+            
+            function openProfileModal() {
+                if (profileModal) {
+                    profileModal.classList.remove('hidden');
+                }
+            }
+            
+            function closeProfileModal() {
+                if (profileModal) {
+                    profileModal.classList.add('hidden');
+                }
+            }
+            
+            if (editProfileBtn) {
+                editProfileBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openProfileModal();
+                });
+            }
+            
+            if (cancelProfileBtn) {
+                cancelProfileBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeProfileModal();
+                });
+            }
+            
+            if (saveProfileBtn) {
+                saveProfileBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeProfileModal();
+                });
+            }
+            
+            // Gérer les boutons des modes de jeu
+            let selectedMode = 'normal';
+            
+            const btnEasy = document.getElementById('easyBtn');
+            const btnNormal = document.getElementById('normalBtn');
+            const btnHard = document.getElementById('hardBtn');
+            const btnGravity = document.getElementById('gravityBtn');
+            const btnPlay = document.getElementById('playBtn');
+            
+            function setMode(mode) {
+                selectedMode = mode;
+                
+                // Mettre à jour les styles des boutons
+                document.querySelectorAll('.mode-buttons button').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                
+                if (mode === 'easy' && btnEasy) {
+                    btnEasy.classList.add('selected');
+                } else if (mode === 'normal' && btnNormal) {
+                    btnNormal.classList.add('selected');
+                } else if (mode === 'hard' && btnHard) {
+                    btnHard.classList.add('selected');
+                } else if (mode === 'gravity' && btnGravity) {
+                    btnGravity.classList.add('selected');
+                }
+            }
+            
+            function forceSelect(mode) {
+                setMode(mode);
+            }
+            
+            // Ajouter les événements aux boutons
+            if (btnEasy) btnEasy.addEventListener('click', () => setMode('easy'));
+            if (btnNormal) btnNormal.addEventListener('click', () => setMode('normal'));
+            if (btnHard) btnHard.addEventListener('click', () => setMode('hard'));
+            if (btnGravity) {
+                const onSelectGravity = (e) => { 
+                    e.preventDefault(); 
+                    forceSelect('gravity'); 
+                };
+                btnGravity.addEventListener('click', onSelectGravity);
+                btnGravity.addEventListener('mousedown', onSelectGravity);
+                btnGravity.addEventListener('touchstart', onSelectGravity, { passive: true });
+            }
+            
+            // Bouton Play
+            if (btnPlay) {
+                btnPlay.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    try {
+                        const res = await fetch(`/start?mode=${selectedMode}`);
+                        if (!res.ok) {
+                            console.error('Erreur start:', res.status);
+                        }
+                        
+                        // Rediriger vers la bonne page selon le mode
+                        if (selectedMode === 'hard') {
+                            window.location.href = '/temp/grid_hard/grid_hard.html';
+                        } else if (selectedMode === 'easy') {
+                            window.location.href = '/temp/grid/grideasy.html';
+                        } else if (selectedMode === 'gravity') {
+                            window.location.href = '/temp/grid/grid_gravity.html';
+                        } else {
+                            window.location.href = '/temp/grid/grid.html';
+                        }
+                    } catch (err) {
+                        console.error('Erreur lors du démarrage:', err);
+                    }
+                });
+            }
+            
+            // Initialiser le mode normal par défaut
+            setMode('normal');
+        });
+    </script>
 </body>
 </html>
