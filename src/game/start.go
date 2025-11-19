@@ -3,6 +3,7 @@ package game
 import (
 	"encoding/json"
 	"net/http"
+	"power4/src/ai"
 	"power4/src/config"
 )
 
@@ -13,6 +14,11 @@ func HandleStart(w http.ResponseWriter, r *http.Request) {
 		mode = "normal"
 	}
 
+	aiLevel := r.URL.Query().Get("aiLevel")
+	
+	// Définir le niveau de l'IA
+	ai.SetLevel(aiLevel)
+	
 	config.CurrentMode = mode
 	rows, cols := config.GetDimensions()
 
@@ -26,9 +32,13 @@ func HandleStart(w http.ResponseWriter, r *http.Request) {
 	config.CurrentPlayer = "R"
 	config.Winner = ""
 
+	// Définir le nom du joueur 2 selon le niveau IA
+	config.Player2Name = ai.GetAIName()
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"status": "started",
-		"mode":   mode,
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "started",
+		"mode":    mode,
+		"aiLevel": ai.GetLevel(),
 	})
 }

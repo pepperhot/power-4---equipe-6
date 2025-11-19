@@ -89,7 +89,7 @@ p {
     margin-bottom: 20px;
 }
 
-.token-shop, .player-names {
+.token-shop, .ai-level-selection {
     background: #f8f9ff;
     padding: 15px;
     border-radius: 8px;
@@ -102,8 +102,81 @@ p {
     margin-bottom: 15px;
 }
 
-.color-selector, .name-selector {
+.color-selector {
     flex: 1;
+}
+
+.btn-ai-level {
+    flex: 1;
+    padding: 10px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-ai-level:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-ai-level.active,
+.btn-ai-level[aria-pressed="true"] {
+    outline: 3px solid rgba(0,0,0,0.2);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.9) inset, 0 0 0 4px rgba(0,0,0,0.2);
+    filter: brightness(0.95);
+}
+
+#aiEasyBtn {
+    background: #28a745;
+}
+
+#aiEasyBtn.active,
+#aiEasyBtn[aria-pressed="true"] {
+    background: #218838 !important;
+    transform: scale(1.08);
+    box-shadow: 0 5px 18px rgba(40, 167, 69, 0.5);
+    border: 2px solid #28a745;
+}
+
+#aiMediumBtn {
+    background: #17a2b8;
+}
+
+#aiMediumBtn.active,
+#aiMediumBtn[aria-pressed="true"] {
+    background: #138496 !important;
+    transform: scale(1.08);
+    box-shadow: 0 5px 18px rgba(23, 162, 184, 0.5);
+    border: 2px solid #17a2b8;
+}
+
+#aiHardBtn {
+    background: #ffc107;
+}
+
+#aiHardBtn.active,
+#aiHardBtn[aria-pressed="true"] {
+    background: #e0a800 !important;
+    transform: scale(1.08);
+    box-shadow: 0 5px 18px rgba(255, 193, 7, 0.5);
+    border: 2px solid #ffc107;
+}
+
+#aiImpossibleBtn {
+    background: #dc3545;
+}
+
+#aiImpossibleBtn.active,
+#aiImpossibleBtn[aria-pressed="true"] {
+    background: #c82333 !important;
+    transform: scale(1.08);
+    box-shadow: 0 5px 18px rgba(220, 53, 69, 0.5);
+    border: 2px solid #dc3545;
 }
 
 label {
@@ -891,7 +964,7 @@ button:hover, .btn-play:hover {
 }
 
 @media (max-width: 520px) {
-    .player-colors, .name-inputs {
+    .player-colors, .ai-level-buttons {
         flex-direction: column !important;
     }
     .mode-buttons {

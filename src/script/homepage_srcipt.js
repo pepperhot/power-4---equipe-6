@@ -4,10 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const player1Color = document.getElementById('player1-color');
     const player2Color = document.getElementById('player2-color');
 
-    // Éléments pour les pseudos
-    const saveNamesBtn = document.querySelector('.btn-save-names');
-    const player1Name = document.getElementById('player1-name');
-    const player2Name = document.getElementById('player2-name');
+    // Éléments pour la sélection du niveau IA
+    const aiEasyBtn = document.getElementById('aiEasyBtn');
+    const aiMediumBtn = document.getElementById('aiMediumBtn');
+    const aiHardBtn = document.getElementById('aiHardBtn');
+    const aiImpossibleBtn = document.getElementById('aiImpossibleBtn');
+    // Aucun niveau IA sélectionné par défaut
+    let selectedAILevel = '';
 
     // Sélection de mode
     const btnEasy = document.getElementById('easyBtn') || document.querySelector('.btn-easy-mode');
@@ -15,11 +18,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnHard = document.getElementById('hardBtn') || document.querySelector('.btn-hard-mode');
     const btnGravity = document.getElementById('gravityBtn') || document.querySelector('.btn-gravities-mode');
     const btnPlay = document.getElementById('playBtn') || document.querySelector('.btn-play');
-    let selectedMode = localStorage.getItem('selectedMode') || 'normal';
+    // Aucun mode sélectionné par défaut
+    let selectedMode = '';
 
     function setMode(mode) {
         selectedMode = mode;
-        try { localStorage.setItem('selectedMode', mode); } catch(_) {}
+        // Désélectionner le niveau IA si un mode de jeu est sélectionné
+        selectedAILevel = '';
+        resetAIButtonVisuals();
+        // Ne pas sauvegarder dans localStorage pour forcer la sélection à chaque chargement
+        // try { localStorage.setItem('selectedMode', mode); } catch(_) {}
         updateModeButtons();
         console.log('[mode] sélectionné =', mode);
     }
@@ -27,12 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Force la sélection visuelle immédiate et sans condition
     function forceSelect(mode) {
         selectedMode = mode;
-        try { localStorage.setItem('selectedMode', mode); } catch(_) {}
+        // Désélectionner le niveau IA si un mode de jeu est sélectionné
+        selectedAILevel = '';
+        resetAIButtonVisuals();
         resetButtonVisuals();
         if (mode === 'easy') markActive(btnEasy);
         else if (mode === 'hard') markActive(btnHard);
         else if (mode === 'gravity') markActive(btnGravity);
-        else markActive(btnNormal);
+        else if (mode === 'normal') markActive(btnNormal);
     }
 
     function resetButtonVisuals() {
@@ -88,11 +98,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedMode === 'easy') markActive(btnEasy);
         else if (selectedMode === 'hard') markActive(btnHard);
         else if (selectedMode === 'gravity') markActive(btnGravity);
-        else markActive(btnNormal);
+        else if (selectedMode === 'normal') markActive(btnNormal);
+        // Si selectedMode est vide, aucun bouton n'est sélectionné
     }
 
-    // Appliquer l'état initial
-    updateModeButtons();
+    // Ne pas appliquer l'état initial - aucun mode sélectionné par défaut
+    // Réinitialiser visuellement tous les boutons au chargement
+    resetButtonVisuals();
 
     if (btnEasy) btnEasy.addEventListener('click', () => setMode('easy'));
     if (btnNormal) btnNormal.addEventListener('click', () => setMode('normal'));
@@ -128,16 +140,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnPlay) btnPlay.addEventListener('click', async (e) => {
         e.preventDefault();
+        
+        // Vérifier qu'un mode OU un niveau IA est sélectionné
+        if ((!selectedMode || selectedMode === '') && (!selectedAILevel || selectedAILevel === '')) {
+            alert('Veuillez sélectionner un mode de jeu ou un niveau IA avant de commencer.');
+            return;
+        }
+        
         try {
-            const res = await fetch(`/start?mode=${selectedMode}`);
+            // Si un niveau IA est sélectionné, on joue contre l'IA (mode normal par défaut)
+            // Sinon, on utilise le mode de jeu sélectionné
+            const mode = selectedAILevel ? 'normal' : selectedMode;
+            const aiLevel = selectedAILevel || 'medium';
+            const res = await fetch(`/start?mode=${mode}&aiLevel=${aiLevel}`);
             if (!res.ok) {
                 console.error('Erreur start:', res.status);
             }
-            if (selectedMode === 'hard') {
+            // Rediriger selon le mode (si IA sélectionnée, utiliser mode normal)
+            if (mode === 'hard') {
                 window.location.href = '/temp/grid_hard/grid_hard.html';
-            } else if (selectedMode === 'easy') {
+            } else if (mode === 'easy') {
                 window.location.href = '/temp/grid/grideasy.html';
-            } else if (selectedMode === 'gravity') {
+            } else if (mode === 'gravity') {
                 window.location.href = '/temp/grid/grid_gravity.html';
             } else {
                 window.location.href = '/temp/grid/grid.html';
@@ -153,13 +177,65 @@ document.addEventListener('DOMContentLoaded', () => {
         player2Color.value = localStorage.getItem('player2Color');
     }
 
-    // Charger les pseudos sauvegardés
-    if (player1Name && localStorage.getItem('player1Name')) {
-        player1Name.value = localStorage.getItem('player1Name');
+    // Fonctions pour gérer la sélection du niveau IA
+    function setAILevel(level) {
+        selectedAILevel = level;
+        // Désélectionner le mode de jeu si un niveau IA est sélectionné
+        selectedMode = '';
+        resetButtonVisuals();
+        // Ne pas sauvegarder dans localStorage pour forcer la sélection à chaque chargement
+        // try { localStorage.setItem('selectedAILevel', level); } catch(_) {}
+        updateAIButtons();
+        console.log('[IA] niveau sélectionné =', level);
     }
-    if (player2Name && localStorage.getItem('player2Name')) {
-        player2Name.value = localStorage.getItem('player2Name');
+
+    function resetAIButtonVisuals() {
+        [aiEasyBtn, aiMediumBtn, aiHardBtn, aiImpossibleBtn].forEach(btn => {
+            if (btn) {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-pressed', 'false');
+                btn.style.outline = '';
+                btn.style.boxShadow = '';
+                btn.style.filter = '';
+            }
+        });
+        if (aiEasyBtn) aiEasyBtn.textContent = 'Facile';
+        if (aiMediumBtn) aiMediumBtn.textContent = 'Moyen';
+        if (aiHardBtn) aiHardBtn.textContent = 'Difficile';
+        if (aiImpossibleBtn) aiImpossibleBtn.textContent = 'Impossible';
     }
+
+    function markAIActive(btn) {
+        if (!btn) return;
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+        btn.style.outline = '3px solid rgba(0,0,0,0.25)';
+        btn.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.9) inset, 0 0 0 4px rgba(0,0,0,0.2)';
+        btn.style.filter = 'brightness(0.95)';
+        if (btn === aiEasyBtn) aiEasyBtn.textContent = 'Facile (sélectionné)';
+        if (btn === aiMediumBtn) aiMediumBtn.textContent = 'Moyen (sélectionné)';
+        if (btn === aiHardBtn) aiHardBtn.textContent = 'Difficile (sélectionné)';
+        if (btn === aiImpossibleBtn) aiImpossibleBtn.textContent = 'Impossible (sélectionné)';
+    }
+
+    function updateAIButtons() {
+        resetAIButtonVisuals();
+        if (selectedAILevel === 'easy') markAIActive(aiEasyBtn);
+        else if (selectedAILevel === 'medium') markAIActive(aiMediumBtn);
+        else if (selectedAILevel === 'hard') markAIActive(aiHardBtn);
+        else if (selectedAILevel === 'impossible') markAIActive(aiImpossibleBtn);
+        // Si selectedAILevel est vide, aucun bouton n'est sélectionné
+    }
+
+    // Ne pas appliquer l'état initial - aucun niveau IA sélectionné par défaut
+    // Réinitialiser visuellement tous les boutons IA au chargement
+    resetAIButtonVisuals();
+
+    // Événements pour les boutons IA
+    if (aiEasyBtn) aiEasyBtn.addEventListener('click', () => setAILevel('easy'));
+    if (aiMediumBtn) aiMediumBtn.addEventListener('click', () => setAILevel('medium'));
+    if (aiHardBtn) aiHardBtn.addEventListener('click', () => setAILevel('hard'));
+    if (aiImpossibleBtn) aiImpossibleBtn.addEventListener('click', () => setAILevel('impossible'));
 
     // Sauvegarder les couleurs
     if (saveBtn) saveBtn.addEventListener('click', () => {

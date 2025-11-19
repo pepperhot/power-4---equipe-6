@@ -186,22 +186,15 @@
                         <button class="btn-save-colors">Sauvegarder les couleurs</button>
                     </div>
 
-                    <div class="player-names">
-                        <h2>👥 Noms des joueurs</h2>
+                    <div class="ai-level-selection">
+                        <h2>🤖 Niveau de l'IA</h2>
                         
-                        <div class="name-inputs">
-                            <div class="name-selector">
-                                <label for="player1-name">Joueur 1 :</label>
-                                <input type="text" id="player1-name" placeholder="Entrez votre pseudo" maxlength="20">
-                            </div>
-                            
-                            <div class="name-selector">
-                                <label for="player2-name">Joueur 2 :</label>
-                                <input type="text" id="player2-name" placeholder="Entrez votre pseudo" maxlength="20">
-                            </div>
+                        <div class="ai-level-buttons">
+                            <button type="button" class="btn-ai-level" id="aiEasyBtn">Facile</button>
+                            <button type="button" class="btn-ai-level" id="aiMediumBtn">Moyen</button>
+                            <button type="button" class="btn-ai-level" id="aiHardBtn">Difficile</button>
+                            <button type="button" class="btn-ai-level" id="aiImpossibleBtn">Impossible</button>
                         </div>
-                        
-                        <button class="btn-save-names">Sauvegarder les pseudos</button>
                     </div>
                 </div>
                 
@@ -302,7 +295,7 @@
             }
             
             // Gérer les boutons des modes de jeu
-            let selectedMode = 'normal';
+            let selectedMode = '';
             
             const btnEasy = document.getElementById('easyBtn');
             const btnNormal = document.getElementById('normalBtn');
@@ -312,6 +305,9 @@
             
             function setMode(mode) {
                 selectedMode = mode;
+                
+                // Désélectionner le niveau IA si un mode de jeu est sélectionné
+                // (Cette logique est gérée dans le script externe, mais on peut aussi le faire ici)
                 
                 // Mettre à jour les styles des boutons
                 document.querySelectorAll('.mode-buttons button').forEach(btn => {
@@ -351,8 +347,19 @@
             if (btnPlay) {
                 btnPlay.addEventListener('click', async function(e) {
                     e.preventDefault();
+                    
+                    // Vérifier qu'un mode OU un niveau IA est sélectionné
+                    // Note: La logique principale est dans le script externe homepage_srcipt.js
+                    // Cette vérification est une redondance
+                    if (!selectedMode || selectedMode === '') {
+                        alert('Veuillez sélectionner un mode de jeu avant de commencer.');
+                        return;
+                    }
+                    
                     try {
-                        const res = await fetch(`/start?mode=${selectedMode}`);
+                        // Utiliser 'medium' par défaut si aucun niveau IA n'est sélectionné
+                        const aiLevel = 'medium'; // Par défaut, mais l'utilisateur devrait sélectionner
+                        const res = await fetch(`/start?mode=${selectedMode}&aiLevel=${aiLevel}`);
                         if (!res.ok) {
                             console.error('Erreur start:', res.status);
                         }
@@ -373,8 +380,7 @@
                 });
             }
             
-            // Initialiser le mode normal par défaut
-            setMode('normal');
+            // Aucun mode sélectionné par défaut - l'utilisateur doit choisir
             
             // Vérifier si l'utilisateur est admin et afficher le lien dashboard
             checkAdminStatus();
