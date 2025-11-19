@@ -57,14 +57,14 @@
                     </div>
                     <div class="profile-info">
                         <div class="profile-names">
-                            <span id="profileFirstName">Prénom</span>
-                            <span id="profileLastName">Nom</span>
+                            <span id="profilePseudoMain">Pseudo</span>
                         </div>
                         <div id="profilePseudo" class="profile-pseudo">@pseudo</div>
                     </div>
                 </div>
                 <div class="profile-actions">
                     <button id="editProfileBtn" class="btn-edit-profile">✏️ Modifier</button>
+                    <a id="dashboardLink" href="/dashboard" class="btn-edit-profile btn-dashboard">🔐 Dashboard Admin</a>
                 </div>
             </div>
         </div>
@@ -134,6 +134,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             const avatar = document.getElementById('profileAvatar');
             const placeholder = document.querySelector('.profile-avatar-placeholder');
+            const profilePseudoMain = document.getElementById('profilePseudoMain');
+            const profilePseudoHandle = document.getElementById('profilePseudo');
             
             function updatePlaceholderVisibility() {
                 if (avatar && placeholder) {
@@ -147,6 +149,20 @@
             
             // Vérifier au chargement
             updatePlaceholderVisibility();
+
+            // Charger le profil depuis la BDD pour afficher le vrai pseudo
+            (async function loadProfile() {
+                try {
+                    const res = await fetch('/profile');
+                    const data = await res.json();
+                    if (data.success) {
+                        if (profilePseudoMain) profilePseudoMain.textContent = data.pseudo || '';
+                        if (profilePseudoHandle) profilePseudoHandle.textContent = data.pseudo ? ('@' + data.pseudo) : '';
+                    }
+                } catch (err) {
+                    console.warn('Impossible de charger le profil sur la homepage', err);
+                }
+            })();
             
             // Vérifier quand l'image change
             if (avatar) {
@@ -267,7 +283,39 @@
             
             // Initialiser le mode normal par défaut
             setMode('normal');
+            
+            // Vérifier si l'utilisateur est admin et afficher le lien dashboard
+            checkAdminStatus();
         });
+        
+        // Vérifier le statut admin
+        async function checkAdminStatus() {
+            try {
+                // On essaye de récupérer le pseudo depuis localStorage,
+                // mais ce n'est pas obligatoire (le backend a aussi un fallback sur config.Player1Name)
+                const storedPseudo = localStorage.getItem('userPseudo') || '';
+                const url = storedPseudo 
+                    ? `/admin/check?pseudo=${encodeURIComponent(storedPseudo)}`
+                    : '/admin/check';
+
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                console.log('Réponse admin check:', data);
+                
+                if (data.success && data.isAdmin) {
+                    const dashboardLink = document.getElementById('dashboardLink');
+                    if (dashboardLink) {
+                        dashboardLink.style.display = 'block';
+                        console.log('Bouton Dashboard Admin affiché');
+                    }
+                } else {
+                    console.log('Utilisateur non admin ou erreur:', data);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la vérification du statut admin:', error);
+            }
+        }
     </script>
 </body>
 </html>

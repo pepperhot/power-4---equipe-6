@@ -22,6 +22,19 @@ async function loadPlayerNames() {
   }
 }
 
+function updateColorIndicators() {
+  const player1Color = localStorage.getItem('player1Color') || '#ff0000';
+  const player2Color = localStorage.getItem('player2Color') || '#ffff00';
+  const avatar1 = document.getElementById('avatar1');
+  const avatar2 = document.getElementById('avatar2');
+  const color1 = document.getElementById('color1');
+  const color2 = document.getElementById('color2');
+  if (avatar1) avatar1.style.background = player1Color;
+  if (avatar2) avatar2.style.background = player2Color;
+  if (color1) color1.style.background = player1Color;
+  if (color2) color2.style.background = player2Color;
+}
+
 async function initGridScript() {
   // Marque explicitement le mode et la dernière grille pour la redirection après victoire
   try {
@@ -35,6 +48,7 @@ async function initGridScript() {
   } catch(_) {}
   applyPlayerColors();
   loadPlayerNames();
+  updateColorIndicators();
   const lignes = document.querySelectorAll('table tr');
 
   // Survol colonne

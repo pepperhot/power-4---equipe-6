@@ -169,9 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---------- Profile section (prénom, nom, pseudo, avatar, bio) ----------
     const profileAvatar = document.getElementById('profileAvatar');
-    const profileFirstNameEl = document.getElementById('profileFirstName');
-    const profileLastNameEl = document.getElementById('profileLastName');
-    const profilePseudoEl = document.getElementById('profilePseudo');
+    const profilePseudoMainEl = document.getElementById('profilePseudoMain');
+    const profilePseudoHandleEl = document.getElementById('profilePseudo');
     const editProfileBtn = document.getElementById('editProfileBtn');
     const profileModal = document.getElementById('profileModal');
     const avatarInput = document.getElementById('profileAvatarInput');
@@ -225,9 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 profileAvatar.src = '';
             }
         }
-        if (profileFirstNameEl) profileFirstNameEl.textContent = profile.firstName || '';
-        if (profileLastNameEl) profileLastNameEl.textContent = profile.lastName || '';
-        if (profilePseudoEl) profilePseudoEl.textContent = profile.pseudo ? ('@' + profile.pseudo) : '';
+        // Afficher uniquement le pseudo comme grand titre
+        if (profilePseudoMainEl) profilePseudoMainEl.textContent = profile.pseudo || '';
+        // Et en dessous, le handle @pseudo
+        if (profilePseudoHandleEl) profilePseudoHandleEl.textContent = profile.pseudo ? ('@' + profile.pseudo) : '';
     }
 
     function openProfileModal() {
@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (avatarPreview) avatarPreview.src = '';
     });
 
-    if (saveProfileBtn) saveProfileBtn.addEventListener('click', (e) => {
+    if (saveProfileBtn) saveProfileBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         try {
             const fn = profileFirstNameInput ? profileFirstNameInput.value.trim() : profile.firstName;
@@ -275,20 +275,42 @@ document.addEventListener('DOMContentLoaded', () => {
             const newBio = profileBioInput ? profileBioInput.value.trim() : profile.bio;
             const newAvatar = avatarPreview && avatarPreview.src && avatarPreview.src.startsWith('data:') ? avatarPreview.src : (profile.avatar || '');
 
-            profile.firstName = fn || profile.firstName;
-            profile.lastName = ln || profile.lastName;
-            profile.pseudo = pseudo || profile.pseudo;
-            profile.bio = newBio || '';
-            profile.avatar = newAvatar || '';
+            const formData = new FormData();
+            formData.append('firstName', fn);
+            formData.append('lastName', ln);
+            formData.append('pseudo', pseudo);
+            formData.append('bio', newBio);
+            formData.append('avatar', newAvatar);
 
-            localStorage.setItem('profileFirstName', profile.firstName);
-            localStorage.setItem('profileLastName', profile.lastName);
-            localStorage.setItem('profilePseudo', profile.pseudo);
-            localStorage.setItem('profileBio', profile.bio);
-            localStorage.setItem('profileAvatar', profile.avatar);
-        } catch (err) { console.warn('Impossible de sauvegarder le profil', err); }
-        renderProfile();
-        closeProfileModal();
+            const res = await fetch('/profile/update', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            if (!data.success) {
+                console.warn('Erreur mise à jour profil:', data.message);
+            } else {
+                // Mettre à jour l'objet local avec les nouvelles valeurs validées
+                profile.firstName = fn;
+                profile.lastName = ln;
+                profile.pseudo = pseudo;
+                profile.bio = newBio;
+                profile.avatar = newAvatar;
+
+                // Mettre à jour le pseudo stocké pour l'admin / autres usages
+                try {
+                    if (profile.pseudo) {
+                        localStorage.setItem('userPseudo', profile.pseudo);
+                    }
+                } catch(_) {}
+
+                renderProfile();
+                closeProfileModal();
+            }
+        } catch (err) {
+            console.warn('Impossible de sauvegarder le profil', err);
+        }
     });
 
     if (cancelProfileBtn) cancelProfileBtn.addEventListener('click', (e) => {
@@ -301,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === profileModal) closeProfileModal();
     });
 
-    // initial render
+    // initial render (vide) puis chargement réel depuis la BDD
     renderProfile();
+    loadProfileFromDB();
 });

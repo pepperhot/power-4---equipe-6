@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+	"power4/src/admin"
 	"power4/src/auth"
 	"power4/src/config"
 	"power4/src/game"
@@ -41,6 +42,11 @@ func ServeLogin(w http.ResponseWriter, r *http.Request) {
 // ServeHomepage sert la page d'accueil
 func ServeHomepage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./temp/homepage/homepage.html")
+}
+
+// ServeDashboard sert la page du dashboard admin
+func ServeDashboard(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./temp/admin/dashboard.html")
 }
 
 // GetPlayers retourne les noms des joueurs
@@ -194,10 +200,15 @@ func WayLink() {
 	http.HandleFunc("/connect", auth.HandleLogin)
 	http.HandleFunc("/register", auth.HandleRegister)
 	http.HandleFunc("/homepage", ServeHomepage)
+	http.HandleFunc("/dashboard", ServeDashboard)
 	http.HandleFunc("/players", GetPlayers)
 	http.HandleFunc("/winner", GetWinner)
 	http.HandleFunc("/profile", GetProfile)
 	http.HandleFunc("/profile/update", UpdateProfile)
+	http.HandleFunc("/admin/check", admin.CheckAdmin)
+	http.HandleFunc("/admin/users", admin.GetAllUsers)
+	http.HandleFunc("/admin/user/update", admin.UpdateUser)
+	http.HandleFunc("/admin/user/delete", admin.DeleteUser)
 	http.HandleFunc("/start", game.HandleStart)
 	http.HandleFunc("/click", game.HandleClick)
 	http.HandleFunc("/state", game.GetState)

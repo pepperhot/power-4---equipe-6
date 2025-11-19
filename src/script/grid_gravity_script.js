@@ -8,6 +8,19 @@ function applyPlayerColors() {
     document.documentElement.style.setProperty("--player2-color", player2Color);
 }
 
+async function loadPlayerNames() {
+    try {
+        const response = await fetch('/players');
+        const data = await response.json();
+        const n1 = document.getElementById('name1');
+        const n2 = document.getElementById('name2');
+        if (n1) n1.textContent = data.name1 || 'Joueur 1';
+        if (n2) n2.textContent = data.name2 || 'Joueur 2';
+    } catch(e) {
+        console.error("Erreur chargement noms :", e);
+    }
+}
+
 function getTrsAndCells() {
     // retourne [trs, nb_rows, nb_cols], pour maj grille
     const trs = Array.from(document.querySelectorAll("table tr"));
@@ -91,6 +104,7 @@ function checkWinnerK(grid, K) {
 
 document.addEventListener("DOMContentLoaded", async ()=>{
     applyPlayerColors();
+    loadPlayerNames();
     const [trs, nb_rows, nb_cols] = getTrsAndCells();
     // Clear any inline backgrounds
     trs.forEach(tr=>Array.from(tr.cells).forEach(td=> td.style.background=""));

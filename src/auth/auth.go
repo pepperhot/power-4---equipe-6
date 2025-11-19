@@ -19,7 +19,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	var pseudo string
 	var storedHash string
-	err := config.DB.QueryRow("SELECT pseudo, password FROM login WHERE email = ?", email).Scan(&pseudo, &storedHash)
+	var isAdmin bool
+	err := config.DB.QueryRow("SELECT pseudo, password, COALESCE(is_admin, FALSE) FROM login WHERE email = ?", email).Scan(&pseudo, &storedHash, &isAdmin)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err == sql.ErrNoRows {
@@ -51,6 +52,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
 		"pseudo":  pseudo,
+		"isAdmin": isAdmin,
 		"message": "Connexion réussie",
 	})
 }

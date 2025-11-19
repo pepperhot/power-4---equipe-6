@@ -46,6 +46,10 @@ loginForm.addEventListener('submit', async function(e) {
     const data = await response.json();
     
     if (data.success) {
+        // Stocker le pseudo dans localStorage pour la vérification admin
+        if (data.pseudo) {
+            localStorage.setItem('userPseudo', data.pseudo);
+        }
         showMessage('login-message', '✅ ' + data.message + ' - Bienvenue ' + data.pseudo, true);
         setTimeout(() => {
         window.location.href = '/homepage';
@@ -71,6 +75,10 @@ registerForm.addEventListener('submit', async function(e) {
     const data = await response.json();
     
     if (data.success) {
+        // Stocker le pseudo dans localStorage pour la vérification admin
+        if (data.pseudo) {
+            localStorage.setItem('userPseudo', data.pseudo);
+        }
         showMessage('register-message', '✅ ' + data.message + ' - Bienvenue ' + data.pseudo, true);
         setTimeout(() => {
         window.location.href = '/homepage';

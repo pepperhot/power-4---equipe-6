@@ -22,17 +22,32 @@ async function loadPlayerNames() {
     }
 }
 
+function updateColorIndicators() {
+    const player1Color = localStorage.getItem('player1Color') || '#ff0000';
+    const player2Color = localStorage.getItem('player2Color') || '#ffff00';
+    const avatar1 = document.getElementById('avatar1');
+    const avatar2 = document.getElementById('avatar2');
+    const color1 = document.getElementById('color1');
+    const color2 = document.getElementById('color2');
+    if (avatar1) avatar1.style.background = player1Color;
+    if (avatar2) avatar2.style.background = player2Color;
+    if (color1) color1.style.background = player1Color;
+    if (color2) color2.style.background = player2Color;
+}
+
 function initGridScript() {
     // Plus de gestion du mode gravity ici
     applyPlayerColors();
     loadPlayerNames();
+    updateColorIndicators();
     const lignes = document.querySelectorAll("table tr");
 
-    // --- SURVOL DE COLONNE ---
-    lignes.forEach(tr => tr.querySelectorAll("td.cell").forEach((cell, colIndex) => {
-        cell.addEventListener("mouseover", () => lignes.forEach(l => l.cells[colIndex].style.background = "lightgray"));
-        cell.addEventListener("mouseout",  () => lignes.forEach(l => l.cells[colIndex].style.background = ""));
-    }));
+    // --- SURVOL DE COLONNE --- (désactivé pour le nouveau design premium)
+    // Les styles CSS gèrent maintenant le survol avec des animations fluides
+    // lignes.forEach(tr => tr.querySelectorAll("td.cell").forEach((cell, colIndex) => {
+    //     cell.addEventListener("mouseover", () => lignes.forEach(l => l.cells[colIndex].style.background = "lightgray"));
+    //     cell.addEventListener("mouseout",  () => lignes.forEach(l => l.cells[colIndex].style.background = ""));
+    // }));
 
     // --- CLIC SUR LES CELLULES ---
     lignes.forEach(tr => tr.querySelectorAll("td.cell").forEach((cell, colIndex) => {
@@ -134,12 +149,18 @@ function updateGrid(gridData) {
     for(let r = 0; r < grid.length; r++) {
         for(let c = 0; c < grid[r].length; c++) {
             const td = lignes[r].cells[c];
+            // Nettoyer les styles inline qui pourraient interférer avec le design premium
+            td.style.removeProperty('background');
+            td.style.removeProperty('background-color');
+            td.style.removeProperty('background-image');
             td.classList.remove('red','yellow');
             if(grid[r][c] === "R") {
                 td.classList.add('red');
             } else if(grid[r][c] === "J") {
                 td.classList.add('yellow');
             }
+            // S'assurer que le fond premium est préservé
+            td.style.setProperty('background', 'linear-gradient(135deg, #5cadff 0%, #0066cc 50%, #004d99 100%)', 'important');
         }
     }
 }
@@ -152,9 +173,22 @@ async function playDropAnimation(player, colIndex, grid) {
     // Uniquement animation du mode normal (du haut vers la position du projeté)
     for(let row=0; row<=finalRow; row++){
         const td = document.querySelectorAll("table tr")[row].cells[colIndex];
+        // S'assurer que les styles inline n'interfèrent pas avec le design premium
+        td.style.removeProperty('background');
+        td.style.removeProperty('background-color');
+        td.style.removeProperty('background-image');
+        // Restaurer le fond premium
+        td.style.setProperty('background', 'linear-gradient(135deg, #5cadff 0%, #0066cc 50%, #004d99 100%)', 'important');
         td.classList.add(className);
         await new Promise(r=>setTimeout(r,100));
-        if(row!==finalRow) td.classList.remove(className);
+        if(row!==finalRow) {
+            td.classList.remove(className);
+            td.style.removeProperty('background');
+            td.style.removeProperty('background-color');
+            td.style.removeProperty('background-image');
+            // Restaurer le fond premium
+            td.style.setProperty('background', 'linear-gradient(135deg, #5cadff 0%, #0066cc 50%, #004d99 100%)', 'important');
+        }
     }
 }
 
