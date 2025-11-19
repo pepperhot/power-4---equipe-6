@@ -185,6 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveProfileBtn = document.getElementById('saveProfileBtn');
     const cancelProfileBtn = document.getElementById('cancelProfileBtn');
 
+    // Sauvegarder le contenu original du bouton de sauvegarde
+    const saveProfileBtnOriginalContent = saveProfileBtn ? saveProfileBtn.innerHTML : '';
+
     // Variable pour stocker les données du profil
     let profile = { firstName: '', lastName: '', pseudo: '', avatar: '', bio: '', country: '' };
 
@@ -267,6 +270,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Réinitialiser l'input file
         if (avatarInput) avatarInput.value = '';
+        // Réinitialiser le bouton de sauvegarde
+        if (saveProfileBtn) {
+            saveProfileBtn.disabled = false;
+            saveProfileBtn.innerHTML = saveProfileBtnOriginalContent;
+        }
         profileModal.classList.remove('hidden');
         // Empêcher le scroll du body
         document.body.style.overflow = 'hidden';
@@ -280,6 +288,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Réinitialiser l'avatar preview si on a annulé
         if (avatarPreview && avatarInput && !avatarInput.files.length) {
             avatarPreview.src = profile.avatar || '';
+        }
+        // Réinitialiser le bouton de sauvegarde
+        if (saveProfileBtn) {
+            saveProfileBtn.disabled = false;
+            saveProfileBtn.innerHTML = saveProfileBtnOriginalContent;
         }
     }
 
@@ -377,7 +390,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             // Désactiver le bouton pendant la sauvegarde
-            const originalContent = saveProfileBtn.innerHTML;
             saveProfileBtn.disabled = true;
             saveProfileBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Enregistrement...';
             
@@ -389,35 +401,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!pseudo) {
                     alert('Le pseudo est obligatoire');
                     saveProfileBtn.disabled = false;
-                    saveProfileBtn.innerHTML = originalContent;
+                    saveProfileBtn.innerHTML = saveProfileBtnOriginalContent;
                     return;
                 }
                 
                 const newBio = profileBioInput ? profileBioInput.value.trim() : profile.bio;
                 
-                // Récupérer l'avatar : soit la nouvelle image (data URL), soit l'ancienne
-                let newAvatar = '';
-                if (avatarPreview && avatarPreview.src) {
-                    if (avatarPreview.src.startsWith('data:')) {
-                        // Nouvelle image sélectionnée
-                        newAvatar = avatarPreview.src;
-                    } else if (avatarPreview.src && !avatarPreview.src.startsWith('data:')) {
-                        // Ancienne image toujours là
-                        newAvatar = avatarPreview.src;
-                    }
-                }
-                
-                // Si l'avatar a été supprimé (pas de src), on envoie une chaîne vide
-                if (avatarPreview && !avatarPreview.src) {
-                    newAvatar = '';
-                }
-
                 const formData = new FormData();
                 formData.append('firstName', fn);
                 formData.append('lastName', ln);
                 formData.append('pseudo', pseudo);
                 formData.append('bio', newBio);
-                formData.append('avatar', newAvatar);
+                
+                // Gérer l'avatar : si un fichier est sélectionné, l'envoyer comme fichier
+                // Sinon, envoyer la data URL ou l'ancienne image
+                if (avatarInput && avatarInput.files && avatarInput.files.length > 0) {
+                    // Un nouveau fichier a été sélectionné, l'envoyer comme fichier
+                    formData.append('avatarFile', avatarInput.files[0]);
+                } else {
+                    // Pas de nouveau fichier, envoyer la data URL ou l'ancienne image
+                    let newAvatar = '';
+                    if (avatarPreview && avatarPreview.src) {
+                        if (avatarPreview.src.startsWith('data:')) {
+                            // Nouvelle image sélectionnée (data URL)
+                            newAvatar = avatarPreview.src;
+                        } else if (avatarPreview.src && !avatarPreview.src.startsWith('data:')) {
+                            // Ancienne image toujours là
+                            newAvatar = avatarPreview.src;
+                        }
+                    }
+                    // Si l'avatar a été supprimé (pas de src), on envoie une chaîne vide
+                    if (avatarPreview && !avatarPreview.src) {
+                        newAvatar = '';
+                    }
+                    formData.append('avatar', newAvatar);
+                }
 
                 const res = await fetch('/profile/update', {
                     method: 'POST',
@@ -429,23 +447,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.warn('Erreur mise à jour profil:', data.message);
                     alert('Erreur lors de la mise à jour : ' + (data.message || 'Erreur inconnue'));
                     saveProfileBtn.disabled = false;
-                    saveProfileBtn.innerHTML = originalContent;
+                    saveProfileBtn.innerHTML = saveProfileBtnOriginalContent;
                 } else {
-                    // Mettre à jour l'objet local avec les nouvelles valeurs validées
-                    profile.firstName = fn;
-                    profile.lastName = ln;
-                    profile.pseudo = pseudo;
-                    profile.bio = newBio;
-                    profile.avatar = newAvatar;
-
                     // Mettre à jour le pseudo stocké pour l'admin / autres usages
                     try {
-                        if (profile.pseudo) {
-                            localStorage.setItem('userPseudo', profile.pseudo);
+                        if (pseudo) {
+                            localStorage.setItem('userPseudo', pseudo);
                         }
                     } catch(_) {}
 
-                    // Recharger le profil depuis la DB pour avoir les données à jour
+                    // Recharger le profil depuis la DB pour avoir les données à jour (incluant l'avatar)
                     await loadProfileFromDB();
                     
                     renderProfile();
@@ -455,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('Impossible de sauvegarder le profil', err);
                 alert('Erreur lors de la sauvegarde. Veuillez réessayer.');
                 saveProfileBtn.disabled = false;
-                saveProfileBtn.innerHTML = originalContent;
+                saveProfileBtn.innerHTML = saveProfileBtnOriginalContent;
             }
         });
     }
@@ -487,4 +498,45 @@ document.addEventListener('DOMContentLoaded', () => {
     // initial render (vide) puis chargement réel depuis la BDD
     renderProfile();
     loadProfileFromDB();
+    
+    // Vérifier le statut admin pour afficher/masquer le bouton Dashboard
+    checkAdminStatus();
 });
+
+// Fonction pour vérifier le statut admin et afficher/masquer le bouton Dashboard
+async function checkAdminStatus() {
+    try {
+        const dashboardLink = document.getElementById('dashboardLink');
+        if (!dashboardLink) return;
+        
+        // Cacher le bouton par défaut
+        dashboardLink.style.display = 'none';
+        
+        // Récupérer le pseudo depuis localStorage ou utiliser celui du backend
+        const storedPseudo = localStorage.getItem('userPseudo') || '';
+        const url = storedPseudo 
+            ? `/admin/check?pseudo=${encodeURIComponent(storedPseudo)}`
+            : '/admin/check';
+
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        console.log('Réponse admin check:', data);
+        
+        // Afficher le bouton seulement si l'utilisateur est admin
+        if (data.success && data.isAdmin) {
+            dashboardLink.style.display = 'flex';
+            console.log('Bouton Dashboard Admin affiché');
+        } else {
+            dashboardLink.style.display = 'none';
+            console.log('Utilisateur non admin - bouton Dashboard masqué');
+        }
+    } catch (error) {
+        console.error('Erreur lors de la vérification du statut admin:', error);
+        // En cas d'erreur, cacher le bouton par sécurité
+        const dashboardLink = document.getElementById('dashboardLink');
+        if (dashboardLink) {
+            dashboardLink.style.display = 'none';
+        }
+    }
+}

@@ -374,7 +374,20 @@ button:hover, .btn-play:hover {
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     text-decoration: none !important;
-    display: none; /* sera mis en block par JS si admin */
+    display: none; /* sera mis en flex par JS si admin */
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Quand le bouton est affiché, utiliser flexbox pour centrer le contenu */
+.btn-dashboard[style*="display: flex"],
+.btn-dashboard[style*="display:flex"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px;
 }
 
 .btn-dashboard:visited,

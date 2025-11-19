@@ -14,12 +14,22 @@ import (
 	"strings"
 )
 
+// disableCache ajoute les en-têtes HTTP pour désactiver le cache
+func disableCache(w http.ResponseWriter) {
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+}
+
 // ServeStatic sert les fichiers statiques (HTML, CSS, JS)
 func ServeStatic(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	if path == "/" {
 		path = "/login.html"
 	}
+
+	// Désactiver le cache pour le développement
+	disableCache(w)
 
 	ext := strings.ToLower(filepath.Ext(path))
 	switch ext {
@@ -36,21 +46,25 @@ func ServeStatic(w http.ResponseWriter, r *http.Request) {
 
 // ServeLogin sert la page de login
 func ServeLogin(w http.ResponseWriter, r *http.Request) {
+	disableCache(w)
 	http.ServeFile(w, r, "./temp/login/login.html")
 }
 
 // ServeHomepage sert la page d'accueil
 func ServeHomepage(w http.ResponseWriter, r *http.Request) {
+	disableCache(w)
 	http.ServeFile(w, r, "./temp/homepage/homepage.html")
 }
 
 // ServeDashboard sert la page du dashboard admin
 func ServeDashboard(w http.ResponseWriter, r *http.Request) {
+	disableCache(w)
 	http.ServeFile(w, r, "./temp/admin/dashboard.html")
 }
 
 // GetPlayers retourne les noms des joueurs
 func GetPlayers(w http.ResponseWriter, r *http.Request) {
+	disableCache(w)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"name1": config.Player1Name,
@@ -60,6 +74,7 @@ func GetPlayers(w http.ResponseWriter, r *http.Request) {
 
 // GetWinner retourne le gagnant actuel
 func GetWinner(w http.ResponseWriter, r *http.Request) {
+	disableCache(w)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"winner": config.Winner,
@@ -68,6 +83,7 @@ func GetWinner(w http.ResponseWriter, r *http.Request) {
 
 // GetProfile retourne les informations du profil utilisateur
 func GetProfile(w http.ResponseWriter, r *http.Request) {
+	disableCache(w)
 	w.Header().Set("Content-Type", "application/json")
 
 	// Si aucun utilisateur n'est connecté, retourner des valeurs par défaut
@@ -128,6 +144,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	disableCache(w)
 	w.Header().Set("Content-Type", "application/json")
 
 	// Si aucun utilisateur n'est connecté
@@ -160,6 +177,33 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Récupérer l'ID et l'email de l'utilisateur actuel pour l'identifier de manière unique
+	var currentUserID int
+	var currentEmail string
+	err = config.DB.QueryRow("SELECT id, email FROM login WHERE pseudo = ?", config.Player1Name).Scan(&currentUserID, &currentEmail)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Utilisateur non trouvé dans la base de données",
+		})
+		return
+	}
+
+	// Vérifier si le nouveau pseudo existe déjà (sauf si c'est le même utilisateur)
+	if newPseudo != config.Player1Name {
+		var existingUserID int
+		err = config.DB.QueryRow("SELECT id FROM login WHERE pseudo = ?", newPseudo).Scan(&existingUserID)
+		if err == nil {
+			// Le pseudo existe déjà et ce n'est pas le même utilisateur
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"message": "Ce pseudo est déjà utilisé par un autre utilisateur",
+			})
+			return
+		}
+		// err != nil signifie que le pseudo n'existe pas, ce qui est bien
+	}
+
 	// Gérer l'upload de fichier image si présent
 	file, _, err := r.FormFile("avatarFile")
 	if err == nil {
@@ -172,9 +216,9 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Mettre à jour la base de données avec avatar et bio
-	_, err = config.DB.Exec("UPDATE login SET nickname = ?, surname = ?, pseudo = ?, avatar = ?, bio = ? WHERE pseudo = ?",
-		firstName, lastName, newPseudo, avatarData, bio, config.Player1Name)
+	// Mettre à jour la base de données en utilisant l'ID (plus fiable que le pseudo)
+	_, err = config.DB.Exec("UPDATE login SET nickname = ?, surname = ?, pseudo = ?, avatar = ?, bio = ? WHERE id = ?",
+		firstName, lastName, newPseudo, avatarData, bio, currentUserID)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{

@@ -1,14 +1,15 @@
-// Vérifier si l'utilisateur est admin au chargement
+// Vérifier si l'utilisateur est admin ou propriétaire au chargement
 document.addEventListener('DOMContentLoaded', async function() {
-    // Vérifier le statut admin
+    // Vérifier le statut admin ou propriétaire
     try {
         // Récupérer le pseudo depuis localStorage
         const pseudo = localStorage.getItem('userPseudo') || '';
         const response = await fetch(`/admin/check?pseudo=${encodeURIComponent(pseudo)}`);
         const data = await response.json();
         
+        // L'utilisateur peut accéder s'il est admin OU propriétaire
         if (!data.success || !data.isAdmin) {
-            alert('Accès refusé. Vous devez être administrateur pour accéder à cette page.');
+            alert('Accès refusé. Vous devez être administrateur ou propriétaire pour accéder à cette page.');
             window.location.href = '/homepage';
             return;
         }
@@ -21,6 +22,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.location.href = '/homepage';
     }
 });
+
+// Variable globale pour stocker si l'utilisateur est le propriétaire
+let isOwner = false;
 
 // Charger la liste des utilisateurs
 async function loadUsers() {
@@ -42,6 +46,9 @@ async function loadUsers() {
             showMessage('Erreur lors du chargement des utilisateurs: ' + (data.message || 'inconnue'), 'error');
             return;
         }
+        
+        // Stocker si l'utilisateur est le propriétaire
+        isOwner = data.isOwner || false;
         
         loading.style.display = 'none';
         usersTable.style.display = 'table';
@@ -90,7 +97,18 @@ function editUser(id, nickname, surname, pseudo, email, country, bio, isAdmin, a
     document.getElementById('editEmail').value = email;
     document.getElementById('editCountry').value = country;
     document.getElementById('editBio').value = bio;
-    document.getElementById('editIsAdmin').checked = isAdmin;
+    
+    const isAdminCheckbox = document.getElementById('editIsAdmin');
+    isAdminCheckbox.checked = isAdmin;
+    
+    // Désactiver la case "Administrateur" si l'utilisateur n'est pas le propriétaire
+    if (!isOwner) {
+        isAdminCheckbox.disabled = true;
+        isAdminCheckbox.title = 'Seul le propriétaire peut modifier les droits administrateur';
+    } else {
+        isAdminCheckbox.disabled = false;
+        isAdminCheckbox.title = '';
+    }
     
     // Vider les champs de mot de passe à chaque ouverture
     const pwd = document.getElementById('editPassword');

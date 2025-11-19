@@ -9,6 +9,17 @@ import (
 	"strconv"
 )
 
+// isOwner vérifie si l'utilisateur est le propriétaire (utilisateur avec is_owner = TRUE)
+func isOwner(pseudo string) (bool, error) {
+	var isOwnerUser bool
+	err := config.DB.QueryRow("SELECT COALESCE(is_owner, FALSE) FROM login WHERE pseudo = ?", pseudo).Scan(&isOwnerUser)
+	if err != nil {
+		return false, err
+	}
+
+	return isOwnerUser, nil
+}
+
 // CheckAdmin vérifie si l'utilisateur connecté est un admin
 func CheckAdmin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -34,7 +45,8 @@ func CheckAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var isAdmin bool
-	err := config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE) FROM login WHERE pseudo = ?", pseudo).Scan(&isAdmin)
+	var isOwnerUser bool
+	err := config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE), COALESCE(is_owner, FALSE) FROM login WHERE pseudo = ?", pseudo).Scan(&isAdmin, &isOwnerUser)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -45,9 +57,13 @@ func CheckAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// L'utilisateur peut accéder au dashboard s'il est admin OU propriétaire
+	canAccess := isAdmin || isOwnerUser
+
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
-		"isAdmin": isAdmin,
+		"isAdmin": canAccess,
+		"isOwner": isOwnerUser,
 	})
 }
 
@@ -73,11 +89,12 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var isAdmin bool
-	err := config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE) FROM login WHERE pseudo = ?", pseudo).Scan(&isAdmin)
-	if err != nil || !isAdmin {
+	var isOwnerUser bool
+	err := config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE), COALESCE(is_owner, FALSE) FROM login WHERE pseudo = ?", pseudo).Scan(&isAdmin, &isOwnerUser)
+	if err != nil || (!isAdmin && !isOwnerUser) {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "Accès refusé - Admin requis",
+			"message": "Accès refusé - Admin ou Propriétaire requis",
 		})
 		return
 	}
@@ -127,9 +144,13 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	// Vérifier si l'utilisateur actuel est le propriétaire
+	isOwnerUser, _ = isOwner(pseudo)
+	
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
 		"users":   users,
+		"isOwner": isOwnerUser,
 	})
 }
 
@@ -142,7 +163,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	// Vérifier si l'utilisateur est admin
+	// Vérifier si l'utilisateur est admin ou propriétaire
 	if config.Player1Name == "Joueur 1" || config.Player1Name == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
@@ -152,11 +173,12 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var isAdmin bool
-	err := config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE) FROM login WHERE pseudo = ?", config.Player1Name).Scan(&isAdmin)
-	if err != nil || !isAdmin {
+	var isOwnerUser bool
+	err := config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE), COALESCE(is_owner, FALSE) FROM login WHERE pseudo = ?", config.Player1Name).Scan(&isAdmin, &isOwnerUser)
+	if err != nil || (!isAdmin && !isOwnerUser) {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "Accès refusé - Admin requis",
+			"message": "Accès refusé - Admin ou Propriétaire requis",
 		})
 		return
 	}
@@ -209,6 +231,36 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Vérifier si l'utilisateur actuel est le propriétaire
+	isOwnerUser, err = isOwner(config.Player1Name)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Erreur lors de la vérification des permissions",
+		})
+		return
+	}
+
+	// Récupérer l'ancien statut admin de l'utilisateur à modifier
+	var oldIsAdmin bool
+	err = config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE) FROM login WHERE id = ?", userID).Scan(&oldIsAdmin)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Utilisateur non trouvé",
+		})
+		return
+	}
+
+	// Seul le propriétaire peut modifier les droits admin
+	if userIsAdmin != oldIsAdmin && !isOwnerUser {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Seul le propriétaire peut modifier les droits administrateur",
+		})
+		return
+	}
+
 	// Si un nouveau mot de passe est fourni, le hasher et l'enregistrer
 	if password != "" {
 		hashed, hashErr := auth.HashPassword(password)
@@ -251,7 +303,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	// Vérifier si l'utilisateur est admin
+	// Vérifier si l'utilisateur est admin ou propriétaire
 	if config.Player1Name == "Joueur 1" || config.Player1Name == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
@@ -261,11 +313,12 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var isAdmin bool
-	err := config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE) FROM login WHERE pseudo = ?", config.Player1Name).Scan(&isAdmin)
-	if err != nil || !isAdmin {
+	var isOwnerUser bool
+	err := config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE), COALESCE(is_owner, FALSE) FROM login WHERE pseudo = ?", config.Player1Name).Scan(&isAdmin, &isOwnerUser)
+	if err != nil || (!isAdmin && !isOwnerUser) {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
-			"message": "Accès refusé - Admin requis",
+			"message": "Accès refusé - Admin ou Propriétaire requis",
 		})
 		return
 	}

@@ -109,7 +109,8 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = config.DB.Exec("INSERT INTO login (nickname, surname, country, pseudo, email, password) VALUES (?, ?, ?, ?, ?, ?)",
+	// S'assurer que is_admin est explicitement défini à FALSE pour les nouveaux utilisateurs
+	_, err = config.DB.Exec("INSERT INTO login (nickname, surname, country, pseudo, email, password, is_admin) VALUES (?, ?, ?, ?, ?, ?, FALSE)",
 		nickname, surname, country, pseudo, email, hashed)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{

@@ -55,3 +55,47 @@ Vous devriez voir la colonne `is_admin` de type `tinyint(1)` (ou `BOOLEAN`).
 - Toutes les routes admin vérifient le statut administrateur
 - Les utilisateurs non-admins sont redirigés vers la page d'accueil s'ils tentent d'accéder au dashboard
 
+## Migration - Système Propriétaire
+
+### 1. Exécuter la migration SQL pour le propriétaire
+
+Pour ajouter la colonne `is_owner` qui identifie le propriétaire (seul à pouvoir donner les droits admin) :
+
+```sql
+ALTER TABLE login ADD COLUMN is_owner BOOLEAN DEFAULT FALSE;
+```
+
+Ou utilisez le fichier SQL fourni :
+
+```bash
+mysql -u root -p power_4 < migrations/add_owner_column.sql
+```
+
+### 2. Définir un propriétaire
+
+Le fichier SQL définit automatiquement le premier utilisateur (ID le plus petit) comme propriétaire.
+
+Pour définir un utilisateur spécifique comme propriétaire :
+
+```sql
+UPDATE login SET is_owner = TRUE WHERE email = 'votre_email@example.com';
+```
+
+**Important** : Il ne devrait y avoir qu'un seul propriétaire à la fois. Assurez-vous de mettre `is_owner = FALSE` pour les autres utilisateurs avant d'en définir un nouveau.
+
+### 3. Vérifier la migration
+
+Pour vérifier que la colonne a bien été ajoutée :
+
+```sql
+DESCRIBE login;
+```
+
+Vous devriez voir la colonne `is_owner` de type `tinyint(1)` (ou `BOOLEAN`).
+
+### 4. Règles du propriétaire
+
+- **Seul le propriétaire** peut modifier les droits administrateur (`is_admin`) des autres utilisateurs
+- Les autres administrateurs peuvent modifier les utilisateurs mais **pas** changer leurs droits admin
+- Le propriétaire est identifié par la colonne `is_owner = TRUE` dans la base de données
+

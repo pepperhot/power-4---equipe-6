@@ -383,6 +383,12 @@
         // Vérifier le statut admin
         async function checkAdminStatus() {
             try {
+                const dashboardLink = document.getElementById('dashboardLink');
+                if (!dashboardLink) return;
+                
+                // Cacher le bouton par défaut (sécurité)
+                dashboardLink.style.display = 'none';
+                
                 // On essaye de récupérer le pseudo depuis localStorage,
                 // mais ce n'est pas obligatoire (le backend a aussi un fallback sur config.Player1Name)
                 const storedPseudo = localStorage.getItem('userPseudo') || '';
@@ -395,19 +401,24 @@
                 
                 console.log('Réponse admin check:', data);
                 
+                // Afficher le bouton seulement si l'utilisateur est admin
                 if (data.success && data.isAdmin) {
-                    const dashboardLink = document.getElementById('dashboardLink');
-                    if (dashboardLink) {
-                        dashboardLink.style.display = 'block';
-                        console.log('Bouton Dashboard Admin affiché');
-                    }
+                    dashboardLink.style.display = 'flex';
+                    console.log('Bouton Dashboard Admin affiché');
                 } else {
-                    console.log('Utilisateur non admin ou erreur:', data);
+                    dashboardLink.style.display = 'none';
+                    console.log('Utilisateur non admin - bouton Dashboard masqué');
                 }
             } catch (error) {
                 console.error('Erreur lors de la vérification du statut admin:', error);
+                // En cas d'erreur, cacher le bouton par sécurité
+                const dashboardLink = document.getElementById('dashboardLink');
+                if (dashboardLink) {
+                    dashboardLink.style.display = 'none';
+                }
             }
         }
     </script>
+    <script src="/src/script/homepage_srcipt.js"></script>
 </body>
 </html>
