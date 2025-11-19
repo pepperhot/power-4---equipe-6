@@ -9,32 +9,124 @@
 <body>
     <!-- Modal / panneau édition profil (caché par défaut) -->
     <div id="profileModal" class="profile-modal hidden" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+        <div class="profile-modal-backdrop"></div>
         <div class="profile-modal-content">
-            <h2 id="profileModalTitle">Modifier le profil</h2>
-
-            <label for="profileFirstNameInput">Prénom</label>
-            <input type="text" id="profileFirstNameInput" maxlength="30" placeholder="Prénom">
-
-            <label for="profileLastNameInput">Nom</label>
-            <input type="text" id="profileLastNameInput" maxlength="30" placeholder="Nom">
-
-            <label for="profilePseudoInput">Pseudo</label>
-            <input type="text" id="profilePseudoInput" maxlength="20" placeholder="Pseudo">
-
-            <label for="profileAvatarInput">Avatar</label>
-            <input type="file" id="profileAvatarInput" accept="image/*">
-
-            <div class="avatar-preview">
-                <img id="avatarPreview" src="" alt="Aperçu avatar">
-                <button id="removeAvatarBtn" type="button" class="btn-remove-avatar">Supprimer</button>
+            <div class="modal-header">
+                <h2 id="profileModalTitle">
+                    <span class="modal-icon">✨</span>
+                    Modifier le profil
+                </h2>
+                <button id="closeModalBtn" class="btn-close-modal" aria-label="Fermer">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
 
-            <label for="profileBioInput">Bio</label>
-            <textarea id="profileBioInput" maxlength="160" placeholder="Une courte bio (optionnel)"></textarea>
+            <div class="modal-body">
+                <!-- Section Avatar -->
+                <div class="form-section avatar-section">
+                    <label class="section-label">Photo de profil</label>
+                    <div class="avatar-upload-container">
+                        <div class="avatar-preview-wrapper">
+                            <div class="avatar-preview-circle">
+                                <img id="avatarPreview" src="" alt="Aperçu avatar">
+                                <div class="avatar-placeholder">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="avatar-actions">
+                                <label for="profileAvatarInput" class="btn-upload-avatar">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    Choisir une photo
+                                </label>
+                                <input type="file" id="profileAvatarInput" accept="image/*" style="display: none;">
+                                <button id="removeAvatarBtn" type="button" class="btn-remove-avatar">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="modal-actions">
-                <button id="saveProfileBtn" class="btn-save">Enregistrer</button>
+                <!-- Section Informations -->
+                <div class="form-section">
+                    <label class="section-label" for="profilePseudoInput">Pseudo</label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <input type="text" id="profilePseudoInput" maxlength="20" placeholder="Votre pseudo">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-section">
+                        <label class="section-label" for="profileFirstNameInput">Prénom</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="8.5" cy="7" r="4"></circle>
+                                <line x1="20" y1="8" x2="20" y2="14"></line>
+                                <line x1="23" y1="11" x2="17" y2="11"></line>
+                            </svg>
+                            <input type="text" id="profileFirstNameInput" maxlength="30" placeholder="Prénom">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="section-label" for="profileLastNameInput">Nom</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="8.5" cy="7" r="4"></circle>
+                                <line x1="20" y1="8" x2="20" y2="14"></line>
+                                <line x1="23" y1="11" x2="17" y2="11"></line>
+                            </svg>
+                            <input type="text" id="profileLastNameInput" maxlength="30" placeholder="Nom">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="section-label" for="profileBioInput">Bio</label>
+                    <div class="textarea-wrapper">
+                        <svg class="input-icon textarea-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <textarea id="profileBioInput" maxlength="160" placeholder="Parlez-nous un peu de vous... (optionnel)"></textarea>
+                        <div class="char-counter">
+                            <span id="bioCharCount">0</span>/160
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
                 <button id="cancelProfileBtn" class="btn-cancel">Annuler</button>
+                <button id="saveProfileBtn" class="btn-save">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Enregistrer
+                </button>
             </div>
         </div>
     </div>

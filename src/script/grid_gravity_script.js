@@ -35,10 +35,15 @@ function updateGridGravity(grid) {
     for(let r=0; r<nb_rows; r++){
         for(let c=0; c<nb_cols; c++){
             const td = trs[r].cells[c];
-            td.style.setProperty('background', '#0099ff', 'important');
+            // Nettoyer les styles inline qui pourraient interférer avec le design premium
+            td.style.removeProperty('background');
+            td.style.removeProperty('background-color');
+            td.style.removeProperty('background-image');
             td.classList.remove('red','yellow');
             if(grid[r][c] === 'R') td.classList.add('red');
             if(grid[r][c] === 'J') td.classList.add('yellow');
+            // S'assurer que le fond premium est préservé
+            td.style.setProperty('background', 'linear-gradient(135deg, #5cadff 0%, #0066cc 50%, #004d99 100%)', 'important');
         }
     }
 }
@@ -57,19 +62,32 @@ async function playGravityDrop(colIndex, grid, colorClass) {
     const stopRow = findStopRowGravity(grid, colIndex);
     // Sécurité : si colonne pleine/stopRow négatif, on ne fait rien !
     if(stopRow < 0 || stopRow >= nb_rows) return;
-    // Nettoyage et forcer fond bleu
+    // Nettoyage et forcer fond premium
     for(let i = 0; i < nb_rows; i++) {
         const td = trs[i].cells[colIndex];
         td.classList.remove('red','yellow');
-        td.style.setProperty('background', '#0099ff', 'important');
+        td.style.removeProperty('background');
+        td.style.removeProperty('background-color');
+        td.style.removeProperty('background-image');
+        td.style.setProperty('background', 'linear-gradient(135deg, #5cadff 0%, #0066cc 50%, #004d99 100%)', 'important');
     }
     // Animation du bas vers la case d'arrêt
     for(let r = nb_rows - 1; r >= stopRow; r--){
         for(let i = 0; i < nb_rows; i++) {
             if (i !== r) {
-                trs[i].cells[colIndex].classList.remove('red', 'yellow');
+                const td = trs[i].cells[colIndex];
+                td.classList.remove('red', 'yellow');
+                td.style.removeProperty('background');
+                td.style.removeProperty('background-color');
+                td.style.removeProperty('background-image');
+                td.style.setProperty('background', 'linear-gradient(135deg, #5cadff 0%, #0066cc 50%, #004d99 100%)', 'important');
             }
         }
+        const td = trs[r].cells[colIndex];
+        td.style.removeProperty('background');
+        td.style.removeProperty('background-color');
+        td.style.removeProperty('background-image');
+        td.style.setProperty('background', 'linear-gradient(135deg, #5cadff 0%, #0066cc 50%, #004d99 100%)', 'important');
         trs[r].cells[colIndex].classList.add(colorClass);
         await new Promise(res=>setTimeout(res, 85));
     }
@@ -106,8 +124,13 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     applyPlayerColors();
     loadPlayerNames();
     const [trs, nb_rows, nb_cols] = getTrsAndCells();
-    // Clear any inline backgrounds
-    trs.forEach(tr=>Array.from(tr.cells).forEach(td=> td.style.background=""));
+    // Appliquer le fond premium à toutes les cellules
+    trs.forEach(tr=>Array.from(tr.cells).forEach(td=> {
+        td.style.removeProperty('background');
+        td.style.removeProperty('background-color');
+        td.style.removeProperty('background-image');
+        td.style.setProperty('background', 'linear-gradient(135deg, #5cadff 0%, #0066cc 50%, #004d99 100%)', 'important');
+    }));
     // Réinitialiser la partie sur le backend et recharger la grille
     try {
         await fetch('/reset', { method:'POST' });

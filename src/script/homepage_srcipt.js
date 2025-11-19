@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const profilePseudoHandleEl = document.getElementById('profilePseudo');
     const editProfileBtn = document.getElementById('editProfileBtn');
     const profileModal = document.getElementById('profileModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
     const avatarInput = document.getElementById('profileAvatarInput');
     const avatarPreview = document.getElementById('avatarPreview');
     const removeAvatarBtn = document.getElementById('removeAvatarBtn');
@@ -180,6 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileLastNameInput = document.getElementById('profileLastNameInput');
     const profilePseudoInput = document.getElementById('profilePseudoInput');
     const profileBioInput = document.getElementById('profileBioInput');
+    const bioCharCount = document.getElementById('bioCharCount');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
     const cancelProfileBtn = document.getElementById('cancelProfileBtn');
 
@@ -220,14 +222,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (profileAvatar) {
             if (profile.avatar) {
                 profileAvatar.src = profile.avatar;
+                profileAvatar.style.display = 'block';
             } else {
                 profileAvatar.src = '';
+                profileAvatar.style.display = 'none';
             }
         }
         // Afficher uniquement le pseudo comme grand titre
-        if (profilePseudoMainEl) profilePseudoMainEl.textContent = profile.pseudo || '';
+        if (profilePseudoMainEl) profilePseudoMainEl.textContent = profile.pseudo || 'Pseudo';
         // Et en dessous, le handle @pseudo
-        if (profilePseudoHandleEl) profilePseudoHandleEl.textContent = profile.pseudo ? ('@' + profile.pseudo) : '';
+        if (profilePseudoHandleEl) profilePseudoHandleEl.textContent = profile.pseudo ? ('@' + profile.pseudo) : '@pseudo';
+    }
+
+    function updateBioCharCount() {
+        if (bioCharCount && profileBioInput) {
+            const count = profileBioInput.value.length;
+            bioCharCount.textContent = count;
+            if (count > 160) {
+                bioCharCount.style.color = '#ef4444';
+            } else if (count > 140) {
+                bioCharCount.style.color = '#f59e0b';
+            } else {
+                bioCharCount.style.color = '#9ca3af';
+            }
+        }
     }
 
     function openProfileModal() {
@@ -235,14 +253,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (profileFirstNameInput) profileFirstNameInput.value = profile.firstName || '';
         if (profileLastNameInput) profileLastNameInput.value = profile.lastName || '';
         if (profilePseudoInput) profilePseudoInput.value = profile.pseudo || '';
-        if (profileBioInput) profileBioInput.value = profile.bio || '';
-        if (avatarPreview) avatarPreview.src = profile.avatar || '';
+        if (profileBioInput) {
+            profileBioInput.value = profile.bio || '';
+            updateBioCharCount();
+        }
+        if (avatarPreview) {
+            if (profile.avatar) {
+                avatarPreview.src = profile.avatar;
+            } else {
+                avatarPreview.src = '';
+            }
+            updateAvatarDisplay();
+        }
+        // Réinitialiser l'input file
+        if (avatarInput) avatarInput.value = '';
         profileModal.classList.remove('hidden');
+        // Empêcher le scroll du body
+        document.body.style.overflow = 'hidden';
     }
 
     function closeProfileModal() {
         if (!profileModal) return;
         profileModal.classList.add('hidden');
+        // Réactiver le scroll du body
+        document.body.style.overflow = '';
+        // Réinitialiser l'avatar preview si on a annulé
+        if (avatarPreview && avatarInput && !avatarInput.files.length) {
+            avatarPreview.src = profile.avatar || '';
+        }
     }
 
     if (editProfileBtn) editProfileBtn.addEventListener('click', (e) => {
@@ -250,77 +288,200 @@ document.addEventListener('DOMContentLoaded', () => {
         openProfileModal();
     });
 
-    // Avatar file -> preview as data URL
-    if (avatarInput) avatarInput.addEventListener('change', (e) => {
-        const f = e.target.files && e.target.files[0];
-        if (!f) return;
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            try { avatarPreview.src = ev.target.result; } catch(_) {}
-        };
-        reader.readAsDataURL(f);
-    });
+    // Bouton de fermeture
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeProfileModal();
+        });
+    }
 
-    if (removeAvatarBtn) removeAvatarBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (avatarPreview) avatarPreview.src = '';
-    });
-
-    if (saveProfileBtn) saveProfileBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        try {
-            const fn = profileFirstNameInput ? profileFirstNameInput.value.trim() : profile.firstName;
-            const ln = profileLastNameInput ? profileLastNameInput.value.trim() : profile.lastName;
-            const pseudo = profilePseudoInput ? profilePseudoInput.value.trim() : profile.pseudo;
-            const newBio = profileBioInput ? profileBioInput.value.trim() : profile.bio;
-            const newAvatar = avatarPreview && avatarPreview.src && avatarPreview.src.startsWith('data:') ? avatarPreview.src : (profile.avatar || '');
-
-            const formData = new FormData();
-            formData.append('firstName', fn);
-            formData.append('lastName', ln);
-            formData.append('pseudo', pseudo);
-            formData.append('bio', newBio);
-            formData.append('avatar', newAvatar);
-
-            const res = await fetch('/profile/update', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
-
-            if (!data.success) {
-                console.warn('Erreur mise à jour profil:', data.message);
+    // Fonction pour mettre à jour l'affichage de l'avatar
+    function updateAvatarDisplay() {
+        if (avatarPreview) {
+            const hasImage = avatarPreview.src && avatarPreview.src.trim() !== '';
+            if (hasImage) {
+                avatarPreview.style.display = 'block';
             } else {
-                // Mettre à jour l'objet local avec les nouvelles valeurs validées
-                profile.firstName = fn;
-                profile.lastName = ln;
-                profile.pseudo = pseudo;
-                profile.bio = newBio;
-                profile.avatar = newAvatar;
+                avatarPreview.style.display = 'none';
+            }
+        }
+    }
 
-                // Mettre à jour le pseudo stocké pour l'admin / autres usages
+    // Avatar file -> preview as data URL
+    if (avatarInput) {
+        avatarInput.addEventListener('change', (e) => {
+            const f = e.target.files && e.target.files[0];
+            if (!f) {
+                updateAvatarDisplay();
+                return;
+            }
+            
+            // Vérifier la taille du fichier (max 5MB)
+            if (f.size > 5 * 1024 * 1024) {
+                alert('Le fichier est trop volumineux. Taille maximale : 5MB');
+                avatarInput.value = '';
+                updateAvatarDisplay();
+                return;
+            }
+            
+            // Vérifier le type de fichier
+            if (!f.type.startsWith('image/')) {
+                alert('Veuillez sélectionner une image valide');
+                avatarInput.value = '';
+                updateAvatarDisplay();
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(ev) {
                 try {
-                    if (profile.pseudo) {
-                        localStorage.setItem('userPseudo', profile.pseudo);
+                    if (avatarPreview) {
+                        avatarPreview.src = ev.target.result;
+                        updateAvatarDisplay();
                     }
-                } catch(_) {}
+                } catch(err) {
+                    console.error('Erreur lors de la prévisualisation:', err);
+                    updateAvatarDisplay();
+                }
+            };
+            reader.onerror = function() {
+                alert('Erreur lors de la lecture du fichier');
+                avatarInput.value = '';
+                updateAvatarDisplay();
+            };
+            reader.readAsDataURL(f);
+        });
+    }
 
-                renderProfile();
+    if (removeAvatarBtn) {
+        removeAvatarBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (avatarPreview) {
+                avatarPreview.src = '';
+            }
+            if (avatarInput) {
+                avatarInput.value = '';
+            }
+            updateAvatarDisplay();
+        });
+    }
+
+    // Compteur de caractères pour la bio
+    if (profileBioInput) {
+        profileBioInput.addEventListener('input', updateBioCharCount);
+    }
+
+    if (saveProfileBtn) {
+        saveProfileBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            // Désactiver le bouton pendant la sauvegarde
+            const originalContent = saveProfileBtn.innerHTML;
+            saveProfileBtn.disabled = true;
+            saveProfileBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Enregistrement...';
+            
+            try {
+                const fn = profileFirstNameInput ? profileFirstNameInput.value.trim() : profile.firstName;
+                const ln = profileLastNameInput ? profileLastNameInput.value.trim() : profile.lastName;
+                const pseudo = profilePseudoInput ? profilePseudoInput.value.trim() : profile.pseudo;
+                
+                if (!pseudo) {
+                    alert('Le pseudo est obligatoire');
+                    saveProfileBtn.disabled = false;
+                    saveProfileBtn.innerHTML = originalContent;
+                    return;
+                }
+                
+                const newBio = profileBioInput ? profileBioInput.value.trim() : profile.bio;
+                
+                // Récupérer l'avatar : soit la nouvelle image (data URL), soit l'ancienne
+                let newAvatar = '';
+                if (avatarPreview && avatarPreview.src) {
+                    if (avatarPreview.src.startsWith('data:')) {
+                        // Nouvelle image sélectionnée
+                        newAvatar = avatarPreview.src;
+                    } else if (avatarPreview.src && !avatarPreview.src.startsWith('data:')) {
+                        // Ancienne image toujours là
+                        newAvatar = avatarPreview.src;
+                    }
+                }
+                
+                // Si l'avatar a été supprimé (pas de src), on envoie une chaîne vide
+                if (avatarPreview && !avatarPreview.src) {
+                    newAvatar = '';
+                }
+
+                const formData = new FormData();
+                formData.append('firstName', fn);
+                formData.append('lastName', ln);
+                formData.append('pseudo', pseudo);
+                formData.append('bio', newBio);
+                formData.append('avatar', newAvatar);
+
+                const res = await fetch('/profile/update', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    console.warn('Erreur mise à jour profil:', data.message);
+                    alert('Erreur lors de la mise à jour : ' + (data.message || 'Erreur inconnue'));
+                    saveProfileBtn.disabled = false;
+                    saveProfileBtn.innerHTML = originalContent;
+                } else {
+                    // Mettre à jour l'objet local avec les nouvelles valeurs validées
+                    profile.firstName = fn;
+                    profile.lastName = ln;
+                    profile.pseudo = pseudo;
+                    profile.bio = newBio;
+                    profile.avatar = newAvatar;
+
+                    // Mettre à jour le pseudo stocké pour l'admin / autres usages
+                    try {
+                        if (profile.pseudo) {
+                            localStorage.setItem('userPseudo', profile.pseudo);
+                        }
+                    } catch(_) {}
+
+                    // Recharger le profil depuis la DB pour avoir les données à jour
+                    await loadProfileFromDB();
+                    
+                    renderProfile();
+                    closeProfileModal();
+                }
+            } catch (err) {
+                console.warn('Impossible de sauvegarder le profil', err);
+                alert('Erreur lors de la sauvegarde. Veuillez réessayer.');
+                saveProfileBtn.disabled = false;
+                saveProfileBtn.innerHTML = originalContent;
+            }
+        });
+    }
+
+    if (cancelProfileBtn) {
+        cancelProfileBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeProfileModal();
+        });
+    }
+
+    // Fermer le modal en cliquant sur le backdrop
+    if (profileModal) {
+        profileModal.addEventListener('click', (e) => {
+            // Si on clique sur le backdrop (pas sur le contenu)
+            if (e.target === profileModal || e.target.classList.contains('profile-modal-backdrop')) {
                 closeProfileModal();
             }
-        } catch (err) {
-            console.warn('Impossible de sauvegarder le profil', err);
+        });
+    }
+
+    // Fermer avec la touche Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && profileModal && !profileModal.classList.contains('hidden')) {
+            closeProfileModal();
         }
-    });
-
-    if (cancelProfileBtn) cancelProfileBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeProfileModal();
-    });
-
-    // close modal on outside click
-    if (profileModal) profileModal.addEventListener('click', (e) => {
-        if (e.target === profileModal) closeProfileModal();
     });
 
     // initial render (vide) puis chargement réel depuis la BDD
