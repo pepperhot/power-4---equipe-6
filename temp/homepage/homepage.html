@@ -152,6 +152,18 @@
                             <span id="profilePseudoMain">Pseudo</span>
                         </div>
                         <div id="profilePseudo" class="profile-pseudo">@pseudo</div>
+                        <div class="profile-xp-level">
+                            <div class="level-display">
+                                <span class="level-label">NIVEAU</span>
+                                <span id="profileLevel" class="level-value">1</span>
+                            </div>
+                            <div class="xp-progress-container">
+                                <div class="xp-progress-bar">
+                                    <div id="xpProgressFill" class="xp-progress-fill"></div>
+                                    <span id="xpRemaining" class="xp-remaining-text">0 XP pour NIVEAU 2</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="profile-actions">
@@ -165,47 +177,85 @@
         <div class="center-column">
             <div class="game-menu">
                 <h1>🎮 Puissance 4</h1>
-                <p>Configurez votre partie et amusez-vous !</p>
+                <p>Choisissez votre mode de jeu</p>
                 
-                <div class="customization-panel">
+                <div class="main-game-buttons">
+                    <button type="button" class="btn-main-mode" id="btnVsAI">
+                        <div class="btn-main-icon">🤖</div>
+                        <div class="btn-main-content">
+                            <h2>Jouer contre l'IA</h2>
+                            <p>Affrontez l'intelligence artificielle à différents niveaux</p>
+                        </div>
+                    </button>
+                    
+                    <button type="button" class="btn-main-mode" id="btnVsPlayer">
+                        <div class="btn-main-icon">👥</div>
+                        <div class="btn-main-content">
+                            <h2>Mode 1V1</h2>
+                            <p>Jouez contre un autre joueur en local</p>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Section IA (cachée par défaut) -->
+                <div id="aiSection" class="game-section hidden">
+                    <h2>🤖 Niveau de l'IA</h2>
+                    
+                    <div class="ai-level-buttons">
+                        <button type="button" class="btn-ai-level" id="aiEasyBtn">Facile</button>
+                        <button type="button" class="btn-ai-level" id="aiMediumBtn">Moyen</button>
+                        <button type="button" class="btn-ai-level" id="aiHardBtn">Difficile</button>
+                        <button type="button" class="btn-ai-level" id="aiImpossibleBtn">Impossible</button>
+                    </div>
+
                     <div class="token-shop">
-                        <h2>🎨 Couleurs des jetons</h2>
-                        
+                        <h3>🎨 Couleurs des jetons</h3>
                         <div class="player-colors">
                             <div class="color-selector">
                                 <label for="player1-color">Joueur 1 :</label>
                                 <input type="color" id="player1-color" value="#ff0000">
                             </div>
-                            
                             <div class="color-selector">
                                 <label for="player2-color">Joueur 2 :</label>
                                 <input type="color" id="player2-color" value="#ffff00">
                             </div>
                         </div>
-                        
                         <button class="btn-save-colors">Sauvegarder les couleurs</button>
                     </div>
 
-                    <div class="ai-level-selection">
-                        <h2>🤖 Niveau de l'IA</h2>
-                        
-                        <div class="ai-level-buttons">
-                            <button type="button" class="btn-ai-level" id="aiEasyBtn">Facile</button>
-                            <button type="button" class="btn-ai-level" id="aiMediumBtn">Moyen</button>
-                            <button type="button" class="btn-ai-level" id="aiHardBtn">Difficile</button>
-                            <button type="button" class="btn-ai-level" id="aiImpossibleBtn">Impossible</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mode-buttons">
-                    <button type="button" class="btn-easy-mode" id="easyBtn">Facile</button>
-                    <button type="button" class="btn-normale-mode" id="normalBtn">Normal</button>
-                    <button type="button" class="btn-hard-mode" id="hardBtn">Difficile</button>
-                    <button type="button" id="gravityBtn" class="btn-gravities-mode">Gravité</button>
+                    <button type="button" class="btn-play" id="playBtnAI">🚀 Commencer la partie</button>
+                    <button type="button" class="btn-back" id="backFromAI">← Retour</button>
                 </div>
 
-                <button type="button" class="btn-play" id="playBtn">🚀 Commencer la partie</button>
+                <!-- Section 1V1 (cachée par défaut) -->
+                <div id="playerSection" class="game-section hidden">
+                    <h2>👥 Mode 1V1</h2>
+                    
+                    <div class="mode-buttons">
+                        <button type="button" class="btn-easy-mode" id="easyBtn">Facile</button>
+                        <button type="button" class="btn-normale-mode" id="normalBtn">Normal</button>
+                        <button type="button" class="btn-hard-mode" id="hardBtn">Difficile</button>
+                        <button type="button" id="gravityBtn" class="btn-gravities-mode">Gravité</button>
+                    </div>
+
+                    <div class="token-shop">
+                        <h3>🎨 Couleurs des jetons</h3>
+                        <div class="player-colors">
+                            <div class="color-selector">
+                                <label for="player1-color-1v1">Joueur 1 :</label>
+                                <input type="color" id="player1-color-1v1" value="#ff0000">
+                            </div>
+                            <div class="color-selector">
+                                <label for="player2-color-1v1">Joueur 2 :</label>
+                                <input type="color" id="player2-color-1v1" value="#ffff00">
+                            </div>
+                        </div>
+                        <button class="btn-save-colors">Sauvegarder les couleurs</button>
+                    </div>
+
+                    <button type="button" class="btn-play" id="playBtn1V1">🚀 Commencer la partie</button>
+                    <button type="button" class="btn-back" id="backFrom1V1">← Retour</button>
+                </div>
             </div>
         </div>
 
@@ -295,19 +345,49 @@
             }
             
             // Gérer les boutons des modes de jeu
-            let selectedMode = '';
+            // Note: La logique principale est gérée par le script externe homepage_srcipt.js
+            // Ce script inline est conservé pour compatibilité mais ne devrait pas interférer
             
             const btnEasy = document.getElementById('easyBtn');
             const btnNormal = document.getElementById('normalBtn');
             const btnHard = document.getElementById('hardBtn');
             const btnGravity = document.getElementById('gravityBtn');
-            const btnPlay = document.getElementById('playBtn');
+            // Les boutons playBtn sont maintenant gérés par le script externe
+            
+            // Variables locales pour ce script (mais le script externe a la priorité)
+            let selectedMode = '';
+            let selectedAILevel = '';
+            
+            // Fonction pour obtenir selectedAILevel depuis le script externe si disponible
+            function getSelectedAILevel() {
+                // Essayer d'accéder à la variable globale depuis le script externe
+                if (typeof window.selectedAILevel !== 'undefined') {
+                    return window.selectedAILevel;
+                }
+                // Sinon, vérifier les boutons IA visuellement
+                const aiEasy = document.getElementById('aiEasyBtn');
+                const aiMedium = document.getElementById('aiMediumBtn');
+                const aiHard = document.getElementById('aiHardBtn');
+                const aiImpossible = document.getElementById('aiImpossibleBtn');
+                
+                if (aiEasy && aiEasy.classList.contains('active')) return 'easy';
+                if (aiMedium && aiMedium.classList.contains('active')) return 'medium';
+                if (aiHard && aiHard.classList.contains('active')) return 'hard';
+                if (aiImpossible && aiImpossible.classList.contains('active')) return 'impossible';
+                return '';
+            }
+            
+            // Fonction pour obtenir selectedMode depuis le script externe si disponible
+            function getSelectedMode() {
+                // Essayer d'accéder à la variable globale depuis le script externe
+                if (typeof window.selectedMode !== 'undefined') {
+                    return window.selectedMode;
+                }
+                return selectedMode;
+            }
             
             function setMode(mode) {
                 selectedMode = mode;
-                
-                // Désélectionner le niveau IA si un mode de jeu est sélectionné
-                // (Cette logique est gérée dans le script externe, mais on peut aussi le faire ici)
                 
                 // Mettre à jour les styles des boutons
                 document.querySelectorAll('.mode-buttons button').forEach(btn => {
@@ -343,42 +423,7 @@
                 btnGravity.addEventListener('touchstart', onSelectGravity, { passive: true });
             }
             
-            // Bouton Play
-            if (btnPlay) {
-                btnPlay.addEventListener('click', async function(e) {
-                    e.preventDefault();
-                    
-                    // Vérifier qu'un mode OU un niveau IA est sélectionné
-                    // Note: La logique principale est dans le script externe homepage_srcipt.js
-                    // Cette vérification est une redondance
-                    if (!selectedMode || selectedMode === '') {
-                        alert('Veuillez sélectionner un mode de jeu avant de commencer.');
-                        return;
-                    }
-                    
-                    try {
-                        // Utiliser 'medium' par défaut si aucun niveau IA n'est sélectionné
-                        const aiLevel = 'medium'; // Par défaut, mais l'utilisateur devrait sélectionner
-                        const res = await fetch(`/start?mode=${selectedMode}&aiLevel=${aiLevel}`);
-                        if (!res.ok) {
-                            console.error('Erreur start:', res.status);
-                        }
-                        
-                        // Rediriger vers la bonne page selon le mode
-                        if (selectedMode === 'hard') {
-                            window.location.href = '/temp/grid_hard/grid_hard.html';
-                        } else if (selectedMode === 'easy') {
-                            window.location.href = '/temp/grid/grideasy.html';
-                        } else if (selectedMode === 'gravity') {
-                            window.location.href = '/temp/grid/grid_gravity.html';
-                        } else {
-                            window.location.href = '/temp/grid/grid.html';
-                        }
-                    } catch (err) {
-                        console.error('Erreur lors du démarrage:', err);
-                    }
-                });
-            }
+            // Les boutons Play sont maintenant gérés par le script externe homepage_srcipt.js
             
             // Aucun mode sélectionné par défaut - l'utilisateur doit choisir
             
@@ -426,5 +471,15 @@
         }
     </script>
     <script src="/src/script/homepage_srcipt.js"></script>
+    
+    <!-- Pop-up de niveau atteint -->
+    <div id="levelUpPopup" class="level-up-popup hidden">
+        <div class="level-up-content">
+            <div class="level-up-icon">🎉</div>
+            <h2 class="level-up-title">Niveau atteint !</h2>
+            <div class="level-up-number" id="levelUpNumber">2</div>
+            <p class="level-up-message">Félicitations !</p>
+        </div>
+    </div>
 </body>
 </html>

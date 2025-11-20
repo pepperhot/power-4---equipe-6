@@ -3,11 +3,27 @@ console.log("grid_hard_script.js chargé");
 let isAnimating = false;
 
 // --- Récupère les couleurs sauvegardées ---
-function applyPlayerColors() {
+async function applyPlayerColors() {
     const player1Color = localStorage.getItem('player1Color') || '#ff0000';
     const player2Color = localStorage.getItem('player2Color') || '#ffff00';
-    document.documentElement.style.setProperty('--player1-color', player1Color);
-    document.documentElement.style.setProperty('--player2-color', player2Color);
+    
+    // Vérifier si on joue contre l'IA
+    try {
+        const response = await fetch('/players');
+        const data = await response.json();
+        const isPlayingAgainstAI = data.name2 && data.name2.length >= 2 && data.name2.substring(0, 2) === 'IA';
+        
+        if (isPlayingAgainstAI) {
+            document.documentElement.style.setProperty('--player1-color', player1Color);
+            document.documentElement.style.setProperty('--player2-color', player2Color);
+        } else {
+            document.documentElement.style.setProperty('--player1-color', player1Color);
+            document.documentElement.style.setProperty('--player2-color', player2Color);
+        }
+    } catch (e) {
+        document.documentElement.style.setProperty('--player1-color', player1Color);
+        document.documentElement.style.setProperty('--player2-color', player2Color);
+    }
 }
 
 // --- Chargement des noms depuis le serveur ---
@@ -15,10 +31,19 @@ async function loadPlayerNames() {
     try {
         const response = await fetch('/players');
         const data = await response.json();
+        const name1 = data.name1 || 'Joueur 1';
+        const name2 = data.name2 || 'Joueur 2';
+        
+        // Sauvegarder dans le localStorage
+        localStorage.setItem('player1Name', name1);
+        localStorage.setItem('player2Name', name2);
+        
         const n1 = document.getElementById('name1');
         const n2 = document.getElementById('name2');
-        if (n1) n1.textContent = data.name1 || 'Joueur 1';
-        if (n2) n2.textContent = data.name2 || 'Joueur 2';
+        if (n1) n1.textContent = name1;
+        if (n2) n2.textContent = name2;
+        
+        console.log('[GRID] Noms chargés et sauvegardés:', { name1, name2 });
     } catch (e) {
         console.error("Erreur chargement noms :", e);
     }
@@ -37,8 +62,15 @@ function updateColorIndicators() {
     if (color2) color2.style.background = player2Color;
 }
 
-function initGridHardScript() {
-    applyPlayerColors();
+async function initGridHardScript() {
+    // Réinitialiser la partie sur le backend avant de charger
+    try {
+        await fetch('/reset', { method: 'POST' });
+    } catch (e) {
+        console.warn('Erreur lors de la réinitialisation:', e);
+    }
+    
+    await applyPlayerColors();
     loadPlayerNames();
     updateColorIndicators();
 
@@ -89,11 +121,60 @@ function initGridHardScript() {
                         setTimeout(() => {
                             window.location.href = "/temp/winner/winner.html";
                         }, 400);
+                        return;
+                    }
+                    
+                    // Si c'est le tour de l'IA, la faire jouer automatiquement
+                    const player2Name = clickData.player2Name || '';
+                    const isAITurn = clickData.isAITurn || (player2Name.length >= 2 && player2Name.substring(0, 2) === 'IA');
+                    
+                    if (isAITurn && !clickData.winner && clickData.current === 'J') {
+                        setTimeout(async () => {
+                            try {
+                                const aiResponse = await fetch('/ai/move', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+                                });
+                                
+                                if (!aiResponse.ok) {
+                                    console.error('Erreur /ai/move:', aiResponse.status);
+                                    return;
+                                }
+                                
+                                const aiData = await aiResponse.json();
+                                
+                                if (aiData.success) {
+                                    try {
+                                        const gravity = (localStorage.getItem('selectedMode') === 'gravity');
+                                        const aiPlayer = getPlayerFromGrid(aiData.grid || [], aiData.col);
+                                        if (!gravity) {
+                                            await playDropAnimation(aiPlayer, aiData.col, aiData.grid || []);
+                                        }
+                                    } catch (animErr) {
+                                        console.warn('Animation IA échouée ou désactivée pour gravité.', animErr);
+                                    }
+                                    updateGrid(aiData);
+                                    
+                                    // Vérifier si l'IA a gagné
+                                    if (aiData.winner) {
+                                        localStorage.setItem("winner", aiData.winner);
+                                        setTimeout(() => {
+                                            window.location.href = "/temp/winner/winner.html";
+                                        }, 400);
+                                    }
+                                }
+                            } catch (e) {
+                                console.error("Erreur lors du coup de l'IA:", e);
+                            } finally {
+                                isAnimating = false;
+                            }
+                        }, 500);
+                    } else {
+                        isAnimating = false;
                     }
                 }
             } catch (e) {
                 console.error("Erreur:", e);
-            } finally {
                 isAnimating = false;
             }
         });
@@ -114,6 +195,8 @@ if (document.readyState === 'loading') {
 // --- Chargement du backend ---
 async function loadGridHard() {
     try {
+        // S'assurer que la partie est réinitialisée avant de charger
+        await fetch('/reset', { method: 'POST' });
         const response = await fetch('/state');
         if (!response.ok) return;
         const data = await response.json();
@@ -125,6 +208,12 @@ async function loadGridHard() {
 
 // --- Met à jour visuellement la grille ---
 function updateGrid(gridData) {
+    // S'assurer que les couleurs sont appliquées
+    const player1Color = localStorage.getItem('player1Color') || '#ff0000';
+    const player2Color = localStorage.getItem('player2Color') || '#ffff00';
+    document.documentElement.style.setProperty('--player1-color', player1Color);
+    document.documentElement.style.setProperty('--player2-color', player2Color);
+    
     const lignes = document.querySelectorAll("table tr");
     const grid = gridData.grid || gridData;
     for (let r = 0; r < grid.length; r++) {

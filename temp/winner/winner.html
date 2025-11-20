@@ -24,6 +24,35 @@
         </div>
         
         <button class="btn-restart" id="restartBtn">Rejouer</button>
+        
+        <!-- Pop-up de niveau atteint -->
+        <div id="levelUpPopup" class="level-up-popup hidden">
+            <div class="level-up-content">
+                <div class="level-up-icon">🎉</div>
+                <h2 class="level-up-title">Niveau atteint !</h2>
+                <div class="level-up-number" id="levelUpNumber">2</div>
+                <p class="level-up-message">Félicitations !</p>
+            </div>
+        </div>
+        
+        <!-- Barre d'XP fixe en bas (comme Fortnite) -->
+        <div id="xpBarContainer" class="xp-bar-container hidden">
+            <div class="xp-bar-content">
+                <div class="xp-bar-level">
+                    <span class="xp-bar-level-label">NIVEAU</span>
+                    <span id="xpBarLevel" class="xp-bar-level-value">1</span>
+                </div>
+                <div class="xp-bar-progress-wrapper">
+                    <div class="xp-bar-progress-bg">
+                        <div id="xpBarFill" class="xp-bar-fill"></div>
+                        <span id="xpBarText" class="xp-bar-text">0 XP pour NIVEAU 2</span>
+                    </div>
+                </div>
+                <div class="xp-bar-gained">
+                    <span id="xpBarGained" class="xp-bar-gained-value">+0 XP</span>
+                </div>
+            </div>
+        </div>
         <button class="btn-back" id="backBtn">Retour à l'accueil</button>
     </div>
     <script src="/src/script/winner_script.js"></script>

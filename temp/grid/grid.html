@@ -389,6 +389,13 @@
             border-radius: 16px 16px 50% 50%;
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), transparent);
             pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* Masquer l'effet de brillance quand il y a un jeton */
+        td.red::after,
+        td.yellow::after {
+            display: none;
         }
         
         td:hover {
@@ -419,41 +426,37 @@
             width: 75px !important;
             height: 75px !important;
             border-radius: 50% !important;
-            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7)) !important;
-            box-shadow: 
-                0 4px 8px rgba(0, 0, 0, 0.2),
-                inset 0 2px 4px rgba(255, 255, 255, 0.8),
-                inset 0 -2px 4px rgba(0, 0, 0, 0.1) !important;
+            background: transparent !important;
+            box-shadow: none !important;
             z-index: 10 !important;
             pointer-events: none !important;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            display: none !important;
         }
         
-        /* Jetons colorés avec effet 3D premium */
-        .red .cell::after,
-        td.red.cell::after {
-            background: radial-gradient(circle at 30% 30%, 
-                rgba(255, 255, 255, 0.5) 0%,
-                var(--player1-color, #ff0000) 30%,
-                var(--player1-color, #ff0000) 100%) !important;
-            box-shadow: 
-                0 6px 12px rgba(0, 0, 0, 0.4),
-                inset 0 3px 6px rgba(255, 255, 255, 0.5),
-                inset 0 -3px 6px rgba(0, 0, 0, 0.3) !important;
-            border: 2px solid rgba(255, 255, 255, 0.2) !important;
-        }
-        
-        .yellow .cell::after,
+        /* Afficher le jeton seulement si la cellule a une couleur */
+        td.red.cell::after,
         td.yellow.cell::after {
-            background: radial-gradient(circle at 30% 30%, 
-                rgba(255, 255, 255, 0.5) 0%,
-                var(--player2-color, #ffff00) 30%,
-                var(--player2-color, #ffff00) 100%) !important;
+            display: block !important;
+        }
+        
+        /* Jetons colorés avec couleur unie */
+        td.red.cell::after {
+            background: var(--player1-color, #ff0000) !important;
             box-shadow: 
-                0 6px 12px rgba(0, 0, 0, 0.4),
-                inset 0 3px 6px rgba(255, 255, 255, 0.5),
-                inset 0 -3px 6px rgba(0, 0, 0, 0.3) !important;
-            border: 2px solid rgba(255, 255, 255, 0.2) !important;
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2) !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        td.yellow.cell::after {
+            background: var(--player2-color, #ffff00) !important;
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2) !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
         }
 
         .btn-retour {

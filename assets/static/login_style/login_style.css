@@ -7,6 +7,7 @@ body {
     height: 100vh;
     margin: 0;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
 }
 .container {
     background: white;
@@ -14,6 +15,103 @@ body {
     border-radius: 10px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     width: 400px;
+    animation: fadeInUp 0.8s ease-out;
+}
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.welcome-animation {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.game-icon {
+    font-size: 64px;
+    margin-bottom: 10px;
+    animation: iconBounce 1s ease-out;
+    display: inline-block;
+}
+@keyframes iconBounce {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-10px) scale(1.1);
+    }
+}
+.animated-title {
+    font-size: 48px;
+    font-weight: 900;
+    margin: 10px 0;
+    color: #667eea;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    animation: titleAnimation 1.2s ease-out;
+    position: relative;
+    text-shadow: 2px 2px 4px rgba(102, 126, 234, 0.3),
+                 0 0 20px rgba(118, 75, 162, 0.2);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    white-space: nowrap;
+}
+@keyframes titleAnimation {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) rotate(-10deg);
+    }
+    50% {
+        transform: scale(1.1) rotate(5deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+.animated-title::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    animation: underlineAnimation 0.8s ease-out 0.5s forwards;
+}
+@keyframes underlineAnimation {
+    to {
+        width: 100%;
+    }
+}
+.subtitle {
+    margin-top: 15px;
+    color: #667eea;
+    font-size: 20px;
+    font-weight: 600;
+    animation: fadeIn 1s ease-out 0.6s both;
+}
+.description {
+    margin-top: 8px;
+    color: #888;
+    font-size: 14px;
+    font-style: italic;
+    animation: fadeIn 1s ease-out 0.8s both;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 h1 {
     text-align: center;

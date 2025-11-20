@@ -2,21 +2,50 @@ console.log("script.js chargé");
 
 let isAnimating = false;
 
-function applyPlayerColors() {
+async function applyPlayerColors() {
     const player1Color = localStorage.getItem('player1Color') || '#ff0000';
     const player2Color = localStorage.getItem('player2Color') || '#ffff00';
-    document.documentElement.style.setProperty('--player1-color', player1Color);
-    document.documentElement.style.setProperty('--player2-color', player2Color);
+    
+    // Vérifier si on joue contre l'IA
+    try {
+        const response = await fetch('/players');
+        const data = await response.json();
+        const isPlayingAgainstAI = data.name2 && data.name2.length >= 2 && data.name2.substring(0, 2) === 'IA';
+        
+        if (isPlayingAgainstAI) {
+            // Si on joue contre l'IA, le joueur humain (R) utilise player1Color
+            // et l'IA (J) utilise player2Color
+            document.documentElement.style.setProperty('--player1-color', player1Color);
+            document.documentElement.style.setProperty('--player2-color', player2Color);
+        } else {
+            // En mode 1V1, utiliser les couleurs normalement
+            document.documentElement.style.setProperty('--player1-color', player1Color);
+            document.documentElement.style.setProperty('--player2-color', player2Color);
+        }
+    } catch (e) {
+        // En cas d'erreur, utiliser les couleurs par défaut
+        document.documentElement.style.setProperty('--player1-color', player1Color);
+        document.documentElement.style.setProperty('--player2-color', player2Color);
+    }
 }
 
 async function loadPlayerNames() {
     try {
         const response = await fetch('/players');
         const data = await response.json();
+        const name1 = data.name1 || 'Joueur 1';
+        const name2 = data.name2 || 'Joueur 2';
+        
+        // Sauvegarder dans le localStorage
+        localStorage.setItem('player1Name', name1);
+        localStorage.setItem('player2Name', name2);
+        
         const n1 = document.getElementById('name1');
         const n2 = document.getElementById('name2');
-        if (n1) n1.textContent = data.name1 || 'Joueur 1';
-        if (n2) n2.textContent = data.name2 || 'Joueur 2';
+        if (n1) n1.textContent = name1;
+        if (n2) n2.textContent = name2;
+        
+        console.log('[GRID] Noms chargés et sauvegardés:', { name1, name2 });
     } catch(e) {
         console.error("Erreur chargement noms :", e);
     }
@@ -35,10 +64,18 @@ function updateColorIndicators() {
     if (color2) color2.style.background = player2Color;
 }
 
-function initGridScript() {
+async function initGridScript() {
+    // Réinitialiser la partie sur le backend avant de charger
+    try {
+        await fetch('/reset', { method: 'POST' });
+        // Le /start sera appelé automatiquement par la page, mais on peut aussi l'appeler ici pour être sûr
+    } catch (e) {
+        console.warn('Erreur lors de la réinitialisation:', e);
+    }
+    
     // Plus de gestion du mode gravity ici
-    applyPlayerColors();
-    loadPlayerNames();
+    await applyPlayerColors();
+    await loadPlayerNames();
     updateColorIndicators();
     const lignes = document.querySelectorAll("table tr");
 
@@ -73,6 +110,7 @@ function initGridScript() {
 
                 const clickData = await clickResponse.json();
                 console.log("Réponse clic:", clickData); // Debug
+                console.log("[DEBUG] Données reçues - current:", clickData.current, "player2Name:", clickData.player2Name, "isAITurn:", clickData.isAITurn, "winner:", clickData.winner);
 
                 if (clickData.success) {
                     try {
@@ -81,7 +119,11 @@ function initGridScript() {
                     } catch (animErr) {
                         console.warn('Animation échouée, mise à jour directe.', animErr);
                     }
-                    updateGrid(clickData);
+                    try {
+                        updateGrid(clickData);
+                    } catch (updateErr) {
+                        console.warn('[DEBUG] Erreur dans updateGrid (non bloquant):', updateErr);
+                    }
 
                     // Fallback: détection locale 4 alignés
                     const localWinner = findWinnerK(clickData.grid, 4);
@@ -96,14 +138,106 @@ function initGridScript() {
                         setTimeout(() => {
                             window.location.href = "/temp/winner/winner.html";
                         }, 400);
+                        return;
+                    }
+                    
+                    console.log('[DEBUG IA] ✅ Arrivé à la vérification de l\'IA');
+                    // Si c'est le tour de l'IA, la faire jouer automatiquement
+                    // Vérifier si Player2Name commence par "IA" OU si isAITurn est vrai
+                    const player2Name = clickData.player2Name || '';
+                    const isAITurnFromServer = clickData.isAITurn === true;
+                    const isAITurnFromName = player2Name.length >= 2 && player2Name.substring(0, 2) === 'IA';
+                    const isAITurn = isAITurnFromServer || isAITurnFromName;
+                    
+                    console.log('[DEBUG IA] clickData:', clickData);
+                    console.log('[DEBUG IA] player2Name:', player2Name, 'isAITurn (server):', isAITurnFromServer, 'isAITurn (name):', isAITurnFromName, 'isAITurn (final):', isAITurn);
+                    console.log('[DEBUG IA] current:', clickData.current, 'winner:', clickData.winner);
+                    
+                    // Si c'est le tour de l'IA (current === 'J' et Player2Name commence par 'IA')
+                    console.log('[DEBUG IA] Vérification conditions:', {
+                        winner: clickData.winner,
+                        current: clickData.current,
+                        isAITurn: isAITurn,
+                        condition1: !clickData.winner,
+                        condition2: clickData.current === 'J',
+                        condition3: isAITurn,
+                        allConditions: !clickData.winner && clickData.current === 'J' && isAITurn
+                    });
+                    
+                    if (!clickData.winner && clickData.current === 'J' && isAITurn) {
+                        console.log('[DEBUG IA] ✓✓✓ CONDITIONS REMPLIES! Appel automatique de l\'IA dans 600ms...');
+                        // NE PAS mettre isAnimating = false ici, on le mettra après le coup de l'IA
+                        // Attendre que l'animation du joueur soit terminée, puis faire jouer l'IA
+                        setTimeout(async () => {
+                            console.log('[DEBUG IA] ⏰⏰⏰ Délai terminé, appel de /ai/move maintenant...');
+                            try {
+                                const aiResponse = await fetch('/ai/move', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+                                });
+                                
+                                if (!aiResponse.ok) {
+                                    const errorText = await aiResponse.text();
+                                    console.error('[DEBUG IA] ❌ Erreur /ai/move:', aiResponse.status, errorText);
+                                    isAnimating = false;
+                                    return;
+                                }
+                                
+                                const aiData = await aiResponse.json();
+                                console.log('[DEBUG IA] Réponse de /ai/move:', aiData);
+                                
+                                if (aiData.success) {
+                                    console.log('[DEBUG IA] ✓ L\'IA a joué avec succès! Colonne:', aiData.col, 'Ligne:', aiData.row);
+                                    try {
+                                        const aiPlayer = getPlayerFromGrid(aiData.grid || [], aiData.col);
+                                        console.log('[DEBUG IA] Animation du jeton IA...');
+                                        await playDropAnimation(aiPlayer, aiData.col, aiData.grid || []);
+                                    } catch (animErr) {
+                                        console.warn('[DEBUG IA] Animation IA échouée, mise à jour directe.', animErr);
+                                    }
+                                    try {
+                                        updateGrid(aiData);
+                                    } catch (updateErr) {
+                                        console.warn('[DEBUG IA] Erreur dans updateGrid après coup IA (non bloquant):', updateErr);
+                                    }
+                                    
+                                    // Vérifier si l'IA a gagné
+                                    if (aiData.winner) {
+                                        console.log('[DEBUG IA] ⚠️ L\'IA a gagné!');
+                                        localStorage.setItem("winner", aiData.winner);
+                                        setTimeout(() => {
+                                            window.location.href = "/temp/winner/winner.html";
+                                        }, 400);
+                                    }
+                                } else {
+                                    console.error('[DEBUG IA] ❌ L\'IA n\'a pas réussi à jouer:', aiData);
+                                }
+                            } catch (e) {
+                                console.error("[DEBUG IA] ❌ Erreur lors du coup de l'IA:", e);
+                            } finally {
+                                console.log('[DEBUG IA] Fin du coup de l\'IA, isAnimating = false');
+                                isAnimating = false;
+                            }
+                        }, 600); // Délai pour que l'animation du joueur se termine
+                    } else {
+                        console.log('[DEBUG IA] ❌ Conditions NON remplies pour appeler l\'IA:', {
+                            winner: clickData.winner,
+                            current: clickData.current,
+                            isAITurn: isAITurn,
+                            player2Name: player2Name,
+                            condition1: !clickData.winner,
+                            condition2: clickData.current === 'J',
+                            condition3: isAITurn
+                        });
+                        isAnimating = false;
                     }
                 } else {
                     console.warn('Clic non pris en compte:', clickData);
+                    isAnimating = false;
                 }
             } catch (e) { 
-                console.error("Erreur :", e); 
-            } finally { 
-                isAnimating = false; 
+                console.error("Erreur :", e);
+                isAnimating = false;
             }
         });
     }));
@@ -123,6 +257,9 @@ try { setInterval(checkWinner, 1500); } catch(_) {}
 // CHARGEMENT ET MISE À JOUR DE LA GRILLE 
 async function loadGrid() {
     try { 
+        // S'assurer que la partie est réinitialisée avant de charger
+        await fetch('/reset', { method: 'POST' });
+        
         const response = await fetch('/state');
         if (!response.ok) {
             const text = await response.text();
@@ -143,24 +280,49 @@ async function loadGrid() {
 }
 
 function updateGrid(gridData) {
+    // S'assurer que les couleurs sont appliquées
+    const player1Color = localStorage.getItem('player1Color') || '#ff0000';
+    const player2Color = localStorage.getItem('player2Color') || '#ffff00';
+    document.documentElement.style.setProperty('--player1-color', player1Color);
+    document.documentElement.style.setProperty('--player2-color', player2Color);
+    
     const lignes = document.querySelectorAll("table tr");
     const grid = gridData.grid || gridData; 
     
-    for(let r = 0; r < grid.length; r++) {
-        for(let c = 0; c < grid[r].length; c++) {
+    if (!lignes || lignes.length === 0) {
+        console.warn('[DEBUG] updateGrid: Aucune ligne trouvée dans le tableau');
+        return;
+    }
+    
+    for(let r = 0; r < grid.length && r < lignes.length; r++) {
+        if (!lignes[r] || !lignes[r].cells) {
+            console.warn(`[DEBUG] updateGrid: Ligne ${r} ou cells non trouvés`);
+            continue;
+        }
+        
+        for(let c = 0; c < grid[r].length && c < lignes[r].cells.length; c++) {
             const td = lignes[r].cells[c];
-            // Nettoyer les styles inline qui pourraient interférer avec le design premium
-            td.style.removeProperty('background');
-            td.style.removeProperty('background-color');
-            td.style.removeProperty('background-image');
-            td.classList.remove('red','yellow');
-            if(grid[r][c] === "R") {
-                td.classList.add('red');
-            } else if(grid[r][c] === "J") {
-                td.classList.add('yellow');
+            if (!td) {
+                console.warn(`[DEBUG] updateGrid: Cellule [${r}][${c}] non trouvée`);
+                continue;
             }
-            // S'assurer que le fond premium est préservé
-            td.style.setProperty('background', 'linear-gradient(135deg, #5cadff 0%, #0066cc 50%, #004d99 100%)', 'important');
+            
+            try {
+                // Nettoyer les styles inline qui pourraient interférer avec le design premium
+                td.style.removeProperty('background');
+                td.style.removeProperty('background-color');
+                td.style.removeProperty('background-image');
+                td.classList.remove('red','yellow');
+                if(grid[r][c] === "R") {
+                    td.classList.add('red');
+                } else if(grid[r][c] === "J") {
+                    td.classList.add('yellow');
+                }
+                // S'assurer que le fond premium est préservé
+                td.style.setProperty('background', 'linear-gradient(135deg, #5cadff 0%, #0066cc 50%, #004d99 100%)', 'important');
+            } catch (err) {
+                console.warn(`[DEBUG] updateGrid: Erreur sur cellule [${r}][${c}]:`, err);
+            }
         }
     }
 }

@@ -1,8 +1,49 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Navigation principale
+    const btnVsAI = document.getElementById('btnVsAI');
+    const btnVsPlayer = document.getElementById('btnVsPlayer');
+    const aiSection = document.getElementById('aiSection');
+    const playerSection = document.getElementById('playerSection');
+    const mainGameButtons = document.querySelector('.main-game-buttons');
+    const backFromAI = document.getElementById('backFromAI');
+    const backFrom1V1 = document.getElementById('backFrom1V1');
+
+    // Fonction pour afficher une section et cacher les autres
+    function showSection(section) {
+        if (mainGameButtons) mainGameButtons.style.display = 'none';
+        if (aiSection) aiSection.classList.add('hidden');
+        if (playerSection) playerSection.classList.add('hidden');
+        
+        if (section === 'ai' && aiSection) {
+            aiSection.classList.remove('hidden');
+        } else if (section === 'player' && playerSection) {
+            playerSection.classList.remove('hidden');
+        } else if (section === 'main' && mainGameButtons) {
+            mainGameButtons.style.display = 'flex';
+        }
+    }
+
+    // Événements pour les boutons principaux
+    if (btnVsAI) {
+        btnVsAI.addEventListener('click', () => {
+            showSection('ai');
+        });
+    }
+
+    if (btnVsPlayer) {
+        btnVsPlayer.addEventListener('click', () => {
+            showSection('player');
+        });
+    }
+
+    // Les gestionnaires pour les boutons de retour seront ajoutés après la définition des fonctions
+
     // Éléments pour les couleurs
     const saveBtn = document.querySelector('.btn-save-colors');
     const player1Color = document.getElementById('player1-color');
     const player2Color = document.getElementById('player2-color');
+    const player1Color1v1 = document.getElementById('player1-color-1v1');
+    const player2Color1v1 = document.getElementById('player2-color-1v1');
 
     // Éléments pour la sélection du niveau IA
     const aiEasyBtn = document.getElementById('aiEasyBtn');
@@ -11,20 +52,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiImpossibleBtn = document.getElementById('aiImpossibleBtn');
     // Aucun niveau IA sélectionné par défaut
     let selectedAILevel = '';
+    window.selectedAILevel = selectedAILevel; // Exposer globalement
 
     // Sélection de mode
     const btnEasy = document.getElementById('easyBtn') || document.querySelector('.btn-easy-mode');
     const btnNormal = document.getElementById('normalBtn') || document.querySelector('.btn-normale-mode');
     const btnHard = document.getElementById('hardBtn') || document.querySelector('.btn-hard-mode');
     const btnGravity = document.getElementById('gravityBtn') || document.querySelector('.btn-gravities-mode');
-    const btnPlay = document.getElementById('playBtn') || document.querySelector('.btn-play');
+    const btnPlay = document.getElementById('playBtnAI') || document.getElementById('playBtn1V1') || document.querySelector('.btn-play');
     // Aucun mode sélectionné par défaut
+    // Exposer les variables globalement pour que le script inline puisse y accéder
     let selectedMode = '';
+    window.selectedMode = selectedMode;
 
     function setMode(mode) {
         selectedMode = mode;
+        window.selectedMode = mode; // Exposer globalement
         // Désélectionner le niveau IA si un mode de jeu est sélectionné
         selectedAILevel = '';
+        window.selectedAILevel = ''; // Exposer globalement
         resetAIButtonVisuals();
         // Ne pas sauvegarder dans localStorage pour forcer la sélection à chaque chargement
         // try { localStorage.setItem('selectedMode', mode); } catch(_) {}
@@ -35,8 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Force la sélection visuelle immédiate et sans condition
     function forceSelect(mode) {
         selectedMode = mode;
+        window.selectedMode = mode; // Exposer globalement
         // Désélectionner le niveau IA si un mode de jeu est sélectionné
         selectedAILevel = '';
+        window.selectedAILevel = ''; // Exposer globalement
         resetAIButtonVisuals();
         resetButtonVisuals();
         if (mode === 'easy') markActive(btnEasy);
@@ -52,7 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
             btnEasy.style.outline = '';
             btnEasy.style.boxShadow = '';
             btnEasy.style.filter = '';
-            btnEasy.textContent = 'Facile';
+            btnEasy.style.transform = '';
+            btnEasy.style.transition = '';
         }
         if (btnNormal) {
             btnNormal.classList.remove('active');
@@ -60,7 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
             btnNormal.style.outline = '';
             btnNormal.style.boxShadow = '';
             btnNormal.style.filter = '';
-            btnNormal.textContent = 'Normal';
+            btnNormal.style.transform = '';
+            btnNormal.style.transition = '';
         }
         if (btnHard) {
             btnHard.classList.remove('active');
@@ -68,7 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
             btnHard.style.outline = '';
             btnHard.style.boxShadow = '';
             btnHard.style.filter = '';
-            btnHard.textContent = 'Difficile';
+            btnHard.style.transform = '';
+            btnHard.style.transition = '';
         }
         if (btnGravity) {
             btnGravity.classList.remove('active');
@@ -76,7 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
             btnGravity.style.outline = '';
             btnGravity.style.boxShadow = '';
             btnGravity.style.filter = '';
-            btnGravity.textContent = 'Gravité';
+            btnGravity.style.transform = '';
+            btnGravity.style.transition = '';
         }
     }
 
@@ -84,13 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!btn) return;
         btn.classList.add('active');
         btn.setAttribute('aria-pressed','true');
-        btn.style.outline = '3px solid rgba(0,0,0,0.25)';
-        btn.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.9) inset, 0 0 0 4px rgba(0,0,0,0.2)';
-        btn.style.filter = 'brightness(0.95)';
-        if (btn === btnEasy) btnEasy.textContent = 'Facile (sélectionné)';
-        if (btn === btnNormal) btnNormal.textContent = 'Normal (sélectionné)';
-        if (btn === btnHard) btnHard.textContent = 'Difficile (sélectionné)';
-        if (btn === btnGravity) btnGravity.textContent = 'Gravité (sélectionné)';
+        btn.style.outline = '';
+        btn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+        btn.style.filter = 'brightness(1.05)';
+        btn.style.transform = 'scale(1.08)';
+        btn.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
     }
 
     function updateModeButtons() {
@@ -138,36 +188,58 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn) forceSelect('gravity');
     }, true);
 
-    if (btnPlay) btnPlay.addEventListener('click', async (e) => {
-        e.preventDefault();
-        
-        // Vérifier qu'un mode OU un niveau IA est sélectionné
-        if ((!selectedMode || selectedMode === '') && (!selectedAILevel || selectedAILevel === '')) {
-            alert('Veuillez sélectionner un mode de jeu ou un niveau IA avant de commencer.');
-            return;
-        }
-        
-        try {
-            // Si un niveau IA est sélectionné, on joue contre l'IA (mode normal par défaut)
-            // Sinon, on utilise le mode de jeu sélectionné
-            const mode = selectedAILevel ? 'normal' : selectedMode;
-            const aiLevel = selectedAILevel || 'medium';
-            const res = await fetch(`/start?mode=${mode}&aiLevel=${aiLevel}`);
-            if (!res.ok) {
-                console.error('Erreur start:', res.status);
+    // Gestion du bouton Play pour l'IA
+    const btnPlayAI = document.getElementById('playBtnAI');
+    if (btnPlayAI) {
+        btnPlayAI.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (!selectedAILevel || selectedAILevel === '') {
+                alert('Veuillez sélectionner un niveau IA avant de commencer.');
+                return;
             }
-            // Rediriger selon le mode (si IA sélectionnée, utiliser mode normal)
-            if (mode === 'hard') {
-                window.location.href = '/temp/grid_hard/grid_hard.html';
-            } else if (mode === 'easy') {
-                window.location.href = '/temp/grid/grideasy.html';
-            } else if (mode === 'gravity') {
-                window.location.href = '/temp/grid/grid_gravity.html';
-            } else {
+            
+            try {
+                // Sauvegarder le niveau de l'IA dans le localStorage
+                localStorage.setItem('selectedAILevel', selectedAILevel);
+                const res = await fetch(`/start?mode=normal&aiLevel=${selectedAILevel}`);
+                if (!res.ok) {
+                    console.error('Erreur start:', res.status);
+                }
                 window.location.href = '/temp/grid/grid.html';
+            } catch(e) { console.error('Erreur start:', e); }
+        });
+    }
+
+    // Gestion du bouton Play pour 1V1
+    const btnPlay1V1 = document.getElementById('playBtn1V1');
+    if (btnPlay1V1) {
+        btnPlay1V1.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (!selectedMode || selectedMode === '') {
+                alert('Veuillez sélectionner un mode de jeu avant de commencer.');
+                return;
             }
-        } catch(e) { console.error('Erreur start:', e); }
-    });
+            
+            try {
+                const res = await fetch(`/start?mode=${selectedMode}`);
+                if (!res.ok) {
+                    console.error('Erreur start:', res.status);
+                }
+                // Rediriger selon le mode
+                if (selectedMode === 'hard') {
+                    window.location.href = '/temp/grid_hard/grid_hard.html';
+                } else if (selectedMode === 'easy') {
+                    window.location.href = '/temp/grid/grideasy.html';
+                } else if (selectedMode === 'gravity') {
+                    window.location.href = '/temp/grid/grid_gravity.html';
+                } else {
+                    window.location.href = '/temp/grid/grid.html';
+                }
+            } catch(e) { console.error('Erreur start:', e); }
+        });
+    }
 
     // Charger les couleurs sauvegardées
     if (player1Color && localStorage.getItem('player1Color')) {
@@ -176,12 +248,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (player2Color && localStorage.getItem('player2Color')) {
         player2Color.value = localStorage.getItem('player2Color');
     }
+    if (player1Color1v1 && localStorage.getItem('player1Color')) {
+        player1Color1v1.value = localStorage.getItem('player1Color');
+    }
+    if (player2Color1v1 && localStorage.getItem('player2Color')) {
+        player2Color1v1.value = localStorage.getItem('player2Color');
+    }
 
     // Fonctions pour gérer la sélection du niveau IA
     function setAILevel(level) {
         selectedAILevel = level;
+        window.selectedAILevel = level; // Exposer globalement
         // Désélectionner le mode de jeu si un niveau IA est sélectionné
         selectedMode = '';
+        window.selectedMode = ''; // Exposer globalement
         resetButtonVisuals();
         // Ne pas sauvegarder dans localStorage pour forcer la sélection à chaque chargement
         // try { localStorage.setItem('selectedAILevel', level); } catch(_) {}
@@ -197,25 +277,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.style.outline = '';
                 btn.style.boxShadow = '';
                 btn.style.filter = '';
+                btn.style.transform = '';
+                btn.style.transition = '';
             }
         });
-        if (aiEasyBtn) aiEasyBtn.textContent = 'Facile';
-        if (aiMediumBtn) aiMediumBtn.textContent = 'Moyen';
-        if (aiHardBtn) aiHardBtn.textContent = 'Difficile';
-        if (aiImpossibleBtn) aiImpossibleBtn.textContent = 'Impossible';
     }
 
     function markAIActive(btn) {
         if (!btn) return;
         btn.classList.add('active');
         btn.setAttribute('aria-pressed', 'true');
-        btn.style.outline = '3px solid rgba(0,0,0,0.25)';
-        btn.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.9) inset, 0 0 0 4px rgba(0,0,0,0.2)';
-        btn.style.filter = 'brightness(0.95)';
-        if (btn === aiEasyBtn) aiEasyBtn.textContent = 'Facile (sélectionné)';
-        if (btn === aiMediumBtn) aiMediumBtn.textContent = 'Moyen (sélectionné)';
-        if (btn === aiHardBtn) aiHardBtn.textContent = 'Difficile (sélectionné)';
-        if (btn === aiImpossibleBtn) aiImpossibleBtn.textContent = 'Impossible (sélectionné)';
+        btn.style.outline = '';
+        btn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+        btn.style.filter = 'brightness(1.05)';
+        btn.style.transform = 'scale(1.08)';
+        btn.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
     }
 
     function updateAIButtons() {
@@ -237,10 +313,43 @@ document.addEventListener('DOMContentLoaded', () => {
     if (aiHardBtn) aiHardBtn.addEventListener('click', () => setAILevel('hard'));
     if (aiImpossibleBtn) aiImpossibleBtn.addEventListener('click', () => setAILevel('impossible'));
 
+    // Gestionnaires pour les boutons de retour (après définition des fonctions)
+    if (backFromAI) {
+        backFromAI.addEventListener('click', () => {
+            showSection('main');
+            // Réinitialiser la sélection IA
+            selectedAILevel = '';
+            window.selectedAILevel = '';
+            resetAIButtonVisuals();
+        });
+    }
+
+    if (backFrom1V1) {
+        backFrom1V1.addEventListener('click', () => {
+            showSection('main');
+            // Réinitialiser la sélection de mode
+            selectedMode = '';
+            window.selectedMode = '';
+            resetButtonVisuals();
+        });
+    }
+
     // Sauvegarder les couleurs
-    if (saveBtn) saveBtn.addEventListener('click', () => {
-        if (player1Color) localStorage.setItem('player1Color', player1Color.value);
-        if (player2Color) localStorage.setItem('player2Color', player2Color.value);
+    const saveBtns = document.querySelectorAll('.btn-save-colors');
+    saveBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Sauvegarder depuis la section active
+            const activeSection = aiSection && !aiSection.classList.contains('hidden') ? 'ai' : 
+                                 playerSection && !playerSection.classList.contains('hidden') ? '1v1' : 'ai';
+            
+            if (activeSection === 'ai') {
+                if (player1Color) localStorage.setItem('player1Color', player1Color.value);
+                if (player2Color) localStorage.setItem('player2Color', player2Color.value);
+            } else if (activeSection === '1v1') {
+                if (player1Color1v1) localStorage.setItem('player1Color', player1Color1v1.value);
+                if (player2Color1v1) localStorage.setItem('player2Color', player2Color1v1.value);
+            }
+        });
     });
 
     // ---------- Profile section (prénom, nom, pseudo, avatar, bio) ----------
@@ -265,35 +374,62 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveProfileBtnOriginalContent = saveProfileBtn ? saveProfileBtn.innerHTML : '';
 
     // Variable pour stocker les données du profil
-    let profile = { firstName: '', lastName: '', pseudo: '', avatar: '', bio: '', country: '' };
+    let profile = { firstName: '', lastName: '', pseudo: '', avatar: '', bio: '', country: '', xp: 0, level: 1 };
 
     // Fonction pour charger le profil depuis la DB via /profile
     async function loadProfileFromDB() {
+        console.log('[HOMEPAGE] Chargement du profil...');
         try {
             const res = await fetch('/profile');
+            console.log('[HOMEPAGE] Réponse /profile, status:', res.status);
             const data = await res.json();
+            console.log('[HOMEPAGE] Données du profil:', data);
+            
             if (data.success) {
+                const oldXP = profile.xp || 0;
+                const oldLevel = profile.level || 1;
+                
                 profile.firstName = data.firstName || '';
                 profile.lastName = data.lastName || '';
                 profile.pseudo = data.pseudo || '';
                 profile.country = data.country || '';
                 profile.avatar = data.avatar || '';
                 profile.bio = data.bio || '';
+                profile.xp = data.xp || 0;
+                profile.level = data.level || 1;
+                
+                console.log('[HOMEPAGE] XP chargé:', {
+                    ancienXP: oldXP,
+                    nouveauXP: profile.xp,
+                    ancienNiveau: oldLevel,
+                    nouveauNiveau: profile.level
+                });
+                
                 renderProfile();
+                
+                // Retourner les anciennes valeurs pour l'animation
+                return { oldXP, oldLevel };
             } else {
+                console.log('[HOMEPAGE] Pas d\'utilisateur connecté');
                 // Si pas d'utilisateur connecté, ne rien afficher (pas de valeurs par défaut)
                 profile.firstName = '';
                 profile.lastName = '';
                 profile.pseudo = '';
+                profile.xp = 0;
+                profile.level = 1;
                 renderProfile();
+                return { oldXP: 0, oldLevel: 1 };
             }
         } catch (err) {
-            console.warn('Impossible de charger le profil depuis la DB', err);
+            console.error('[HOMEPAGE] ❌ Erreur lors du chargement du profil:', err);
             // Pas de fallback vers localStorage, on laisse vide
             profile.firstName = '';
             profile.lastName = '';
             profile.pseudo = '';
+            profile.xp = 0;
+            profile.level = 1;
             renderProfile();
+            return { oldXP: 0, oldLevel: 1 };
         }
     }
 
@@ -311,6 +447,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (profilePseudoMainEl) profilePseudoMainEl.textContent = profile.pseudo || 'Pseudo';
         // Et en dessous, le handle @pseudo
         if (profilePseudoHandleEl) profilePseudoHandleEl.textContent = profile.pseudo ? ('@' + profile.pseudo) : '@pseudo';
+        
+        // Afficher l'XP et le niveau avec barre de progression
+        const profileXP = document.getElementById('profileXP');
+        const profileLevel = document.getElementById('profileLevel');
+        const xpProgressFill = document.getElementById('xpProgressFill');
+        const xpRemaining = document.getElementById('xpRemaining');
+        
+        const currentXP = profile.xp || 0;
+        const currentLevel = profile.level || 1;
+        const xpForCurrentLevel = (currentLevel - 1) * 100; // XP nécessaire pour atteindre le niveau actuel
+        const xpForNextLevel = currentLevel * 100; // XP nécessaire pour le prochain niveau
+        const xpInCurrentLevel = currentXP - xpForCurrentLevel; // XP dans le niveau actuel
+        const xpNeededForNext = xpForNextLevel - currentXP; // XP restant pour le prochain niveau
+        const progressPercent = (xpInCurrentLevel / 100) * 100; // Pourcentage de progression (100 XP par niveau)
+        
+        if (profileXP) profileXP.textContent = currentXP.toLocaleString();
+        if (profileLevel) profileLevel.textContent = currentLevel;
+        
+        if (xpProgressFill) {
+            xpProgressFill.style.width = Math.min(progressPercent, 100) + '%';
+        }
+        
+        if (xpRemaining) {
+            const nextLevel = currentLevel + 1;
+            xpRemaining.textContent = `${xpNeededForNext.toLocaleString()} XP pour NIVEAU ${nextLevel}`;
+        }
     }
 
     function updateBioCharCount() {
@@ -573,11 +735,150 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // initial render (vide) puis chargement réel depuis la BDD
     renderProfile();
-    loadProfileFromDB();
+    loadProfileFromDB().then(() => {
+        // Animer la barre d'XP si on vient de gagner de l'XP
+        animateXPBar();
+    });
     
     // Vérifier le statut admin pour afficher/masquer le bouton Dashboard
     checkAdminStatus();
 });
+
+// Fonction pour animer la barre d'XP après une victoire
+function animateXPBar() {
+    const xpGained = localStorage.getItem('xpGained');
+    const newXP = localStorage.getItem('newXP');
+    const newLevel = localStorage.getItem('newLevel');
+    
+    if (xpGained && newXP && newLevel) {
+        // Récupérer l'XP actuel depuis le profil (avant la mise à jour)
+        const oldXP = profile.xp || 0;
+        const oldLevel = profile.level || 1;
+        const finalXP = parseInt(newXP);
+        const finalLevel = parseInt(newLevel);
+        
+        // Attendre un peu pour que le DOM soit prêt
+        setTimeout(() => {
+            // Recharger le profil pour avoir les nouvelles valeurs
+            loadProfileFromDB().then(() => {
+                // Animer la barre d'XP
+                const xpProgressFill = document.getElementById('xpProgressFill');
+                const profileLevel = document.getElementById('profileLevel');
+                const xpRemaining = document.getElementById('xpRemaining');
+                
+                if (xpProgressFill && profileLevel) {
+                    // Animation du niveau si changement
+                    if (finalLevel > oldLevel) {
+                        animateLevelUp(oldLevel, finalLevel, profileLevel);
+                    } else {
+                        profileLevel.textContent = finalLevel;
+                    }
+                    
+                    // Animation de la barre d'XP
+                    animateXPProgress(oldXP, finalXP, finalLevel, xpProgressFill, xpRemaining);
+                }
+                
+                // Nettoyer le localStorage après l'animation
+                setTimeout(() => {
+                    localStorage.removeItem('xpGained');
+                    localStorage.removeItem('newXP');
+                    localStorage.removeItem('newLevel');
+                }, 2000);
+            });
+        }, 300);
+    }
+}
+
+// Fonction pour animer la progression de l'XP
+function animateXPProgress(startXP, endXP, level, progressBar, xpRemainingEl) {
+    const xpForCurrentLevel = (level - 1) * 100;
+    const startXPInLevel = Math.max(0, startXP - xpForCurrentLevel);
+    const endXPInLevel = Math.max(0, endXP - xpForCurrentLevel);
+    const startPercent = Math.min((startXPInLevel / 100) * 100, 100);
+    const endPercent = Math.min((endXPInLevel / 100) * 100, 100);
+    
+    // Mettre à jour le texte d'XP restant
+    if (xpRemainingEl) {
+        const xpNeeded = (level * 100) - endXP;
+        const nextLevel = level + 1;
+        xpRemainingEl.textContent = `${xpNeeded.toLocaleString()} XP pour NIVEAU ${nextLevel}`;
+    }
+    
+    // Si on passe au niveau suivant, animer jusqu'à 100% puis recommencer
+    if (endXP >= level * 100 && startXP < level * 100) {
+        // Animer jusqu'à 100%
+        progressBar.style.width = startPercent + '%';
+        progressBar.style.transition = 'width 0.8s ease-out';
+        setTimeout(() => {
+            progressBar.style.width = '100%';
+            setTimeout(() => {
+                // Réinitialiser et animer vers le nouveau pourcentage
+                progressBar.style.width = '0%';
+                progressBar.style.transition = 'width 0.2s ease-out';
+                setTimeout(() => {
+                    const newXPInLevel = endXP - (level * 100);
+                    const newPercent = Math.min((newXPInLevel / 100) * 100, 100);
+                    progressBar.style.transition = 'width 0.8s ease-out';
+                    progressBar.style.width = newPercent + '%';
+                }, 200);
+            }, 500);
+        }, 100);
+    } else {
+        // Animation normale
+        progressBar.style.width = startPercent + '%';
+        progressBar.style.transition = 'width 0.8s ease-out';
+        setTimeout(() => {
+            progressBar.style.width = endPercent + '%';
+        }, 100);
+    }
+}
+
+// Fonction pour animer le changement de niveau
+function animateLevelUp(startLevel, endLevel, levelElement) {
+    if (!levelElement) return;
+    
+    // Afficher le pop-up de niveau atteint
+    if (endLevel > startLevel) {
+        showLevelUpPopup(endLevel);
+    }
+    
+    let current = startLevel;
+    levelElement.style.transition = 'transform 0.3s ease-out';
+    
+    const interval = setInterval(() => {
+        current++;
+        levelElement.textContent = current;
+        levelElement.style.transform = 'scale(1.3)';
+        setTimeout(() => {
+            levelElement.style.transform = 'scale(1)';
+        }, 300);
+        
+        if (current >= endLevel) {
+            clearInterval(interval);
+        }
+    }, 400);
+}
+
+// Fonction pour afficher le pop-up de niveau atteint
+function showLevelUpPopup(level) {
+    const popup = document.getElementById('levelUpPopup');
+    const levelNumber = document.getElementById('levelUpNumber');
+    
+    if (popup && levelNumber) {
+        levelNumber.textContent = level;
+        popup.classList.remove('hidden');
+        
+        // Fermer le pop-up après 3 secondes
+        setTimeout(() => {
+            popup.classList.add('hidden');
+        }, 3000);
+        
+        // Permettre de fermer en cliquant dessus
+        popup.addEventListener('click', () => {
+            popup.classList.add('hidden');
+        }, { once: true });
+    }
+}
 
 // Fonction pour vérifier le statut admin et afficher/masquer le bouton Dashboard
 async function checkAdminStatus() {

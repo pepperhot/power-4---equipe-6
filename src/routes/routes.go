@@ -97,6 +97,8 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 			"country":   "",
 			"avatar":    "",
 			"bio":       "",
+			"xp":        0,
+			"level":     1,
 		})
 		return
 	}
@@ -104,9 +106,10 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 	var firstName, lastName, pseudo, country string
 	var avatar sql.NullString
 	var bio sql.NullString
+	var xp, level int
 
-	err := config.DB.QueryRow("SELECT nickname, surname, pseudo, country, avatar, bio FROM login WHERE pseudo = ?", config.Player1Name).
-		Scan(&firstName, &lastName, &pseudo, &country, &avatar, &bio)
+	err := config.DB.QueryRow("SELECT nickname, surname, pseudo, country, avatar, bio, COALESCE(xp, 0), COALESCE(level, 1) FROM login WHERE pseudo = ?", config.Player1Name).
+		Scan(&firstName, &lastName, &pseudo, &country, &avatar, &bio, &xp, &level)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -134,6 +137,8 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 		"country":   country,
 		"avatar":    avatarStr,
 		"bio":       bioStr,
+		"xp":        xp,
+		"level":     level,
 	})
 }
 
@@ -255,6 +260,8 @@ func WayLink() {
 	http.HandleFunc("/admin/user/delete", admin.DeleteUser)
 	http.HandleFunc("/start", game.HandleStart)
 	http.HandleFunc("/click", game.HandleClick)
+	http.HandleFunc("/ai/move", game.HandleAIMove)
 	http.HandleFunc("/state", game.GetState)
 	http.HandleFunc("/reset", game.ResetGame)
+	http.HandleFunc("/award-xp", game.HandleAwardXP)
 }

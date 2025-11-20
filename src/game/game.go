@@ -71,11 +71,27 @@ func HandleClick(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	
+	// Vérifier si c'est le tour de l'IA après le coup du joueur
+	isAITurn := false
+	if config.Winner == "" && config.CurrentPlayer == "J" {
+		// Vérifier si Player2Name commence par "IA" (plus simple et plus fiable)
+		if len(config.Player2Name) >= 2 && config.Player2Name[:2] == "IA" {
+			isAITurn = true
+		}
+	}
+	
+	// Log pour déboguer
+	log.Printf("[DEBUG] HandleClick - CurrentPlayer: %s, Player2Name: %s, isAITurn: %v, Winner: %s", 
+		config.CurrentPlayer, config.Player2Name, isAITurn, config.Winner)
+	
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"grid":    config.Grid,
-		"current": config.CurrentPlayer,
-		"winner":  config.Winner,
+		"success":     true,
+		"grid":        config.Grid,
+		"current":     config.CurrentPlayer,
+		"winner":      config.Winner,
+		"isAITurn":    isAITurn,
+		"player2Name": config.Player2Name, // Debug: ajouter le nom du joueur 2
 	})
 }
 

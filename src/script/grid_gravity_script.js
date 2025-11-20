@@ -1,21 +1,46 @@
 // Gravity Mode: Jeu Puissance 4 - Script indépendant
 let isAnimating = false;
 
-function applyPlayerColors() {
+async function applyPlayerColors() {
     const player1Color = localStorage.getItem("player1Color") || "#ff0000";
     const player2Color = localStorage.getItem("player2Color") || "#ffff00";
-    document.documentElement.style.setProperty("--player1-color", player1Color);
-    document.documentElement.style.setProperty("--player2-color", player2Color);
+    
+    // Vérifier si on joue contre l'IA
+    try {
+        const response = await fetch('/players');
+        const data = await response.json();
+        const isPlayingAgainstAI = data.name2 && data.name2.length >= 2 && data.name2.substring(0, 2) === 'IA';
+        
+        if (isPlayingAgainstAI) {
+            document.documentElement.style.setProperty("--player1-color", player1Color);
+            document.documentElement.style.setProperty("--player2-color", player2Color);
+        } else {
+            document.documentElement.style.setProperty("--player1-color", player1Color);
+            document.documentElement.style.setProperty("--player2-color", player2Color);
+        }
+    } catch (e) {
+        document.documentElement.style.setProperty("--player1-color", player1Color);
+        document.documentElement.style.setProperty("--player2-color", player2Color);
+    }
 }
 
 async function loadPlayerNames() {
     try {
         const response = await fetch('/players');
         const data = await response.json();
+        const name1 = data.name1 || 'Joueur 1';
+        const name2 = data.name2 || 'Joueur 2';
+        
+        // Sauvegarder dans le localStorage
+        localStorage.setItem('player1Name', name1);
+        localStorage.setItem('player2Name', name2);
+        
         const n1 = document.getElementById('name1');
         const n2 = document.getElementById('name2');
-        if (n1) n1.textContent = data.name1 || 'Joueur 1';
-        if (n2) n2.textContent = data.name2 || 'Joueur 2';
+        if (n1) n1.textContent = name1;
+        if (n2) n2.textContent = name2;
+        
+        console.log('[GRID] Noms chargés et sauvegardés:', { name1, name2 });
     } catch(e) {
         console.error("Erreur chargement noms :", e);
     }
@@ -31,6 +56,12 @@ function getTrsAndCells() {
 }
 
 function updateGridGravity(grid) {
+    // S'assurer que les couleurs sont appliquées
+    const player1Color = localStorage.getItem('player1Color') || '#ff0000';
+    const player2Color = localStorage.getItem('player2Color') || '#ffff00';
+    document.documentElement.style.setProperty('--player1-color', player1Color);
+    document.documentElement.style.setProperty('--player2-color', player2Color);
+    
     const [trs, nb_rows, nb_cols] = getTrsAndCells();
     for(let r=0; r<nb_rows; r++){
         for(let c=0; c<nb_cols; c++){
@@ -121,8 +152,8 @@ function checkWinnerK(grid, K) {
 }
 
 document.addEventListener("DOMContentLoaded", async ()=>{
-    applyPlayerColors();
-    loadPlayerNames();
+    await applyPlayerColors();
+    await loadPlayerNames();
     const [trs, nb_rows, nb_cols] = getTrsAndCells();
     // Appliquer le fond premium à toutes les cellules
     trs.forEach(tr=>Array.from(tr.cells).forEach(td=> {
@@ -179,8 +210,58 @@ document.addEventListener("DOMContentLoaded", async ()=>{
                     setTimeout(()=> window.location.href="/temp/winner/winner.html", 350);
                     return;
                 }
-            }catch(e){ console.warn('[GRAVITY] Erreur JS', e); }
-            finally {isAnimating = false;}
+                
+                // Si c'est le tour de l'IA, la faire jouer automatiquement
+                const player2Name = clickData.player2Name || '';
+                const isAITurn = clickData.isAITurn || (player2Name.length >= 2 && player2Name.substring(0, 2) === 'IA');
+                
+                if (isAITurn && !clickData.winner && clickData.current === 'J') {
+                    setTimeout(async () => {
+                        try {
+                            const aiResponse = await fetch('/ai/move', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+                            });
+                            
+                            if (!aiResponse.ok) {
+                                console.error('Erreur /ai/move:', aiResponse.status);
+                                return;
+                            }
+                            
+                            const aiData = await aiResponse.json();
+                            
+                            if (aiData.success) {
+                                const aiGrid = aiData.grid || [];
+                                const aiColorClass = getPlayerFromGrid(aiGrid, aiData.col)==='R'?'red':'yellow';
+                                await playGravityDrop(aiData.col, aiGrid, aiColorClass);
+                                updateGridGravity(aiGrid);
+                                
+                                // Vérifier si l'IA a gagné
+                                const aiWinner = checkWinnerK(aiGrid, 4);
+                                if (aiWinner) {
+                                    localStorage.setItem("winner", aiWinner);
+                                    setTimeout(()=> window.location.href="/temp/winner/winner.html", 350);
+                                    return;
+                                }
+                                
+                                if (aiData.winner) {
+                                    localStorage.setItem("winner", aiData.winner);
+                                    setTimeout(()=> window.location.href="/temp/winner/winner.html", 350);
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Erreur lors du coup de l'IA:", e);
+                        } finally {
+                            isAnimating = false;
+                        }
+                    }, 500);
+                } else {
+                    isAnimating = false;
+                }
+            }catch(e){ 
+                console.warn('[GRAVITY] Erreur JS', e);
+                isAnimating = false;
+            }
         });
     }));
     // Bouton retour
