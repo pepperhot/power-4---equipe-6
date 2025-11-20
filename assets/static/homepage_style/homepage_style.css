@@ -40,15 +40,21 @@ body {
 }
 
 .right-column {
-    flex: 0 0 300px !important;
-    overflow: hidden !important;
+    flex: 0 0 380px !important;
+    overflow: visible !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding-top: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .profile-section {
     background: white;
     padding: 32px 28px 28px;
-    border-radius: 16px;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.35);
+    border-radius: 32px;
+    box-shadow: none;
     width: 100%;
     max-width: 380px;
 }
@@ -56,8 +62,8 @@ body {
 .game-menu {
     background: white;
     padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border-radius: 32px;
+    box-shadow: none;
     width: 100%;
     max-width: 600px;
     overflow: hidden !important;
@@ -1254,7 +1260,461 @@ button:hover, .btn-play:hover {
     }
     
     .right-column {
-        flex: 0 0 300px !important;
-        display: block !important;
+        flex: 0 0 380px !important;
+        display: flex !important;
     }
+}
+
+/* Leaderboard */
+.leaderboard-section {
+    background: white;
+    border-radius: 32px;
+    width: 100%;
+    max-width: 360px;
+    min-width: 340px;
+    padding: 30px 25px;
+    box-shadow: none;
+    min-height: 500px;
+    max-height: calc(85vh - 40px);
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative;
+    z-index: 1;
+    margin: auto;
+}
+
+.leaderboard-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.leaderboard-header h2 {
+    margin: 0 0 5px 0;
+    font-size: 28px;
+    color: #333;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.leaderboard-subtitle {
+    font-size: 14px;
+    color: #999;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.leaderboard-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    min-height: 200px;
+}
+
+.leaderboard-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.leaderboard-list::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 10px;
+}
+
+.leaderboard-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+.leaderboard-loading {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+    font-size: 14px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    border-radius: 16px;
+    border: 2px solid #e8e9f0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.leaderboard-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.leaderboard-item:hover {
+    transform: translateX(5px);
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.leaderboard-item:hover::before {
+    transform: scaleY(1);
+}
+
+.leaderboard-item.top-1 {
+    background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+    border-color: #ffd700;
+}
+
+.leaderboard-item.top-1::before {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+}
+
+.leaderboard-item.top-2 {
+    background: linear-gradient(135deg, #f0f0f0 0%, #ffffff 100%);
+    border-color: #c0c0c0;
+}
+
+.leaderboard-item.top-2::before {
+    background: linear-gradient(135deg, #c0c0c0, #e0e0e0);
+}
+
+.leaderboard-item.top-3 {
+    background: linear-gradient(135deg, #ffe5d9 0%, #ffffff 100%);
+    border-color: #cd7f32;
+}
+
+.leaderboard-item.top-3::before {
+    background: linear-gradient(135deg, #cd7f32, #e6a057);
+}
+
+.leaderboard-rank {
+    font-size: 20px;
+    font-weight: 700;
+    color: #667eea;
+    min-width: 35px;
+    text-align: center;
+}
+
+.leaderboard-item.top-1 .leaderboard-rank {
+    color: #ffd700;
+    font-size: 20px;
+}
+
+.leaderboard-item.top-2 .leaderboard-rank {
+    color: #c0c0c0;
+    font-size: 19px;
+}
+
+.leaderboard-item.top-3 .leaderboard-rank {
+    color: #cd7f32;
+    font-size: 19px;
+}
+
+.leaderboard-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e0e0e0;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.leaderboard-item.top-1 .leaderboard-avatar {
+    border-color: #ffd700;
+    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
+}
+
+.leaderboard-item.top-2 .leaderboard-avatar {
+    border-color: #c0c0c0;
+    box-shadow: 0 0 0 2px rgba(192, 192, 192, 0.3);
+}
+
+.leaderboard-item.top-3 .leaderboard-avatar {
+    border-color: #cd7f32;
+    box-shadow: 0 0 0 2px rgba(205, 127, 50, 0.3);
+}
+
+.leaderboard-avatar-placeholder {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 22px;
+    flex-shrink: 0;
+    border: 3px solid #e0e0e0;
+}
+
+.leaderboard-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.leaderboard-pseudo {
+    font-weight: 700;
+    font-size: 17px;
+    color: #333;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.leaderboard-level {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.leaderboard-level-badge {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #764ba2;
+}
+
+.leaderboard-item.top-1 .leaderboard-level-badge {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 237, 78, 0.2));
+    color: #b8860b;
+}
+
+/* ============================================
+   ANIMATIONS GLOBALES POUR TOUS LES BOUTONS
+   ============================================ */
+
+/* Animation de base pour tous les boutons */
+button, 
+.btn-play, 
+.btn-edit-profile, 
+.btn-dashboard,
+.btn-back,
+.btn-ai-level,
+.btn-main-mode,
+.btn-easy-mode,
+.btn-normale-mode,
+.btn-hard-mode,
+.btn-gravities-mode,
+.btn-save-colors,
+input[type="submit"],
+input[type="button"],
+a.btn,
+.leaderboard-item,
+.profile-avatar-container,
+#editProfileBtn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet hover général pour tous les boutons */
+button:hover:not(:disabled):not(.no-hover),
+.btn-play:hover:not(:disabled),
+.btn-edit-profile:hover:not(:disabled),
+.btn-dashboard:hover:not(:disabled),
+.btn-back:hover:not(:disabled),
+.btn-ai-level:hover:not(:disabled):not(.active),
+.btn-main-mode:hover:not(:disabled),
+.btn-easy-mode:hover:not(:disabled):not(.selected),
+.btn-normale-mode:hover:not(:disabled):not(.selected),
+.btn-hard-mode:hover:not(:disabled):not(.selected),
+.btn-gravities-mode:hover:not(:disabled):not(.selected),
+.btn-save-colors:hover:not(:disabled),
+input[type="submit"]:hover:not(:disabled),
+input[type="button"]:hover:not(:disabled),
+a.btn:hover:not(:disabled),
+.profile-avatar-container:hover,
+#editProfileBtn:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+    filter: brightness(1.05);
+}
+
+/* Effet active (clic) */
+button:active:not(:disabled),
+.btn-play:active:not(:disabled),
+.btn-edit-profile:active:not(:disabled),
+.btn-dashboard:active:not(:disabled),
+.btn-back:active:not(:disabled),
+.btn-ai-level:active:not(:disabled),
+.btn-main-mode:active:not(:disabled),
+.btn-easy-mode:active:not(:disabled),
+.btn-normale-mode:active:not(:disabled),
+.btn-hard-mode:active:not(:disabled),
+.btn-gravities-mode:active:not(:disabled),
+.btn-save-colors:active:not(:disabled),
+input[type="submit"]:active:not(:disabled),
+input[type="button"]:active:not(:disabled),
+a.btn:active:not(:disabled),
+#editProfileBtn:active:not(:disabled) {
+    transform: translateY(-1px) scale(0.98) !important;
+    transition: all 0.1s ease !important;
+}
+
+/* Animation pour les éléments de leaderboard */
+.leaderboard-item:hover {
+    transform: translateX(5px) translateY(-2px) scale(1.02) !important;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.25) !important;
+}
+
+/* Animation pour les boutons Support */
+.btn-support:hover,
+.btn-history:hover {
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 8px 25px rgba(245, 87, 108, 0.5) !important;
+}
+
+.btn-support:active,
+.btn-history:active {
+    transform: translateY(-1px) scale(0.98) !important;
+}
+
+/* Animation pour les boutons de fermeture de modals */
+.btn-close-modal:hover,
+.btn-close-history:hover {
+    transform: rotate(90deg) scale(1.1) !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn-close-modal:active,
+.btn-close-history:active {
+    transform: rotate(90deg) scale(0.9) !important;
+}
+
+/* Animation pour les inputs cliquables */
+input[type="color"]:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+input[type="color"]:active {
+    transform: scale(0.95) !important;
+}
+
+/* Animation pour les éléments de profil */
+.profile-avatar-container:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Animation pour les boutons de mode sélectionnés */
+.btn-ai-level.active:hover,
+.btn-easy-mode.selected:hover,
+.btn-normale-mode.selected:hover,
+.btn-hard-mode.selected:hover,
+.btn-gravities-mode.selected:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Animation pour les boutons désactivés */
+button:disabled,
+.btn-play:disabled,
+input[type="submit"]:disabled,
+input[type="button"]:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    transform: none !important;
+}
+
+/* Animation de pulsation pour les boutons importants */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.btn-main-mode:hover {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Animation de brillance au survol */
+button::before,
+.btn-play::before,
+.btn-edit-profile::before,
+.btn-dashboard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+button:hover::before,
+.btn-play:hover::before,
+.btn-edit-profile:hover::before,
+.btn-dashboard:hover::before {
+    left: 100%;
+}
+
+/* Animation pour les liens */
+a:not(.btn):hover {
+    transform: translateX(3px);
+    transition: transform 0.2s ease;
+}
+
+/* Animation pour les éléments de formulaire */
+select:hover,
+input[type="text"]:hover,
+input[type="email"]:hover,
+textarea:hover {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    transform: translateY(-1px) !important;
+}
+
+select:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+textarea:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+    transform: translateY(-1px) scale(1.01) !important;
+}
+
+.leaderboard-item.top-2 .leaderboard-level-badge {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.2), rgba(224, 224, 224, 0.2));
+    color: #696969;
+}
+
+.leaderboard-item.top-3 .leaderboard-level-badge {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.2), rgba(230, 160, 87, 0.2));
+    color: #8b4513;
 }

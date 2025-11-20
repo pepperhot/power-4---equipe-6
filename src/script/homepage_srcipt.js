@@ -740,6 +740,9 @@ document.addEventListener('DOMContentLoaded', () => {
         animateXPBar();
     });
     
+    // Charger le leaderboard
+    loadLeaderboard();
+    
     // Vérifier le statut admin pour afficher/masquer le bouton Dashboard
     checkAdminStatus();
 });
@@ -917,3 +920,163 @@ async function checkAdminStatus() {
         }
     }
 }
+
+// Charger le leaderboard
+async function loadLeaderboard() {
+    console.log('[LEADERBOARD] Début du chargement...');
+    const leaderboardList = document.getElementById('leaderboardList');
+    if (!leaderboardList) {
+        console.error('[LEADERBOARD] Élément leaderboardList introuvable!');
+        return;
+    }
+    console.log('[LEADERBOARD] Élément trouvé:', leaderboardList);
+    
+    try {
+        const response = await fetch('/leaderboard');
+        console.log('[LEADERBOARD] Réponse reçue:', response.status);
+        const data = await response.json();
+        console.log('[LEADERBOARD] Données reçues:', data);
+        
+        if (data.success) {
+            console.log('[LEADERBOARD] Affichage de', data.leaderboard?.length || 0, 'joueurs');
+            displayLeaderboard(data.leaderboard || []);
+        } else {
+            console.error('[LEADERBOARD] Erreur:', data.message);
+            leaderboardList.innerHTML = '<div class="leaderboard-loading">Erreur de chargement</div>';
+        }
+    } catch (error) {
+        console.error('[LEADERBOARD] Exception:', error);
+        leaderboardList.innerHTML = '<div class="leaderboard-loading">Erreur de chargement</div>';
+    }
+}
+
+// Afficher le leaderboard
+function displayLeaderboard(leaderboard) {
+    const leaderboardList = document.getElementById('leaderboardList');
+    if (!leaderboardList) return;
+    
+    if (leaderboard.length === 0) {
+        leaderboardList.innerHTML = '<div class="leaderboard-loading">Aucun joueur</div>';
+        return;
+    }
+    
+    leaderboardList.innerHTML = leaderboard.map((player, index) => {
+        const topClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
+        const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+        
+        // Avatar ou placeholder
+        let avatarHtml = '';
+        if (player.avatar && player.avatar.trim() !== '') {
+            avatarHtml = `<img src="${escapeHtml(player.avatar)}" alt="${escapeHtml(player.pseudo)}" class="leaderboard-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+        }
+        const firstLetter = player.pseudo ? player.pseudo.charAt(0).toUpperCase() : '?';
+        avatarHtml += `<div class="leaderboard-avatar-placeholder" style="${player.avatar && player.avatar.trim() !== '' ? 'display: none;' : ''}">${firstLetter}</div>`;
+        
+        return `
+            <div class="leaderboard-item ${topClass}">
+                <div class="leaderboard-rank">${medal || player.rank}</div>
+                <div class="leaderboard-avatar-container">
+                    ${avatarHtml}
+                </div>
+                <div class="leaderboard-info">
+                    <div class="leaderboard-pseudo">${escapeHtml(player.pseudo || 'Joueur')}</div>
+                    <div class="leaderboard-level">
+                        <span class="leaderboard-level-badge">Niveau ${player.level || 1}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Fonction pour échapper le HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Gestion du modal Histoire
+document.addEventListener('DOMContentLoaded', () => {
+    const historyBtn = document.getElementById('historyBtn');
+    const historyModal = document.getElementById('historyModal');
+    const closeHistoryModal = document.getElementById('closeHistoryModal');
+    const historyBackdrop = historyModal?.querySelector('.history-modal-backdrop');
+
+    // Ouvrir le modal
+    if (historyBtn && historyModal) {
+        historyBtn.addEventListener('click', () => {
+            historyModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+    }
+
+    // Fermer le modal
+    if (closeHistoryModal && historyModal) {
+        closeHistoryModal.addEventListener('click', () => {
+            historyModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+    }
+
+    // Fermer en cliquant sur le backdrop
+    if (historyBackdrop && historyModal) {
+        historyBackdrop.addEventListener('click', (e) => {
+            if (e.target === historyBackdrop) {
+                historyModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+
+    // Fermer avec la touche Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && historyModal && !historyModal.classList.contains('hidden')) {
+            historyModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    });
+});
+
+// Gestion du modal Règles du Jeu
+document.addEventListener('DOMContentLoaded', () => {
+    const rulesBtn = document.getElementById('rulesBtn');
+    const rulesModal = document.getElementById('rulesModal');
+    const closeRulesModal = document.getElementById('closeRulesModal');
+    const rulesBackdrop = rulesModal?.querySelector('.history-modal-backdrop');
+
+    // Ouvrir le modal
+    if (rulesBtn && rulesModal) {
+        rulesBtn.addEventListener('click', () => {
+            rulesModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+    }
+
+    // Fermer le modal
+    if (closeRulesModal && rulesModal) {
+        closeRulesModal.addEventListener('click', () => {
+            rulesModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+    }
+
+    // Fermer en cliquant sur le backdrop
+    if (rulesBackdrop && rulesModal) {
+        rulesBackdrop.addEventListener('click', (e) => {
+            if (e.target === rulesBackdrop) {
+                rulesModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+
+    // Fermer avec la touche Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && rulesModal && !rulesModal.classList.contains('hidden')) {
+            rulesModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    });
+});

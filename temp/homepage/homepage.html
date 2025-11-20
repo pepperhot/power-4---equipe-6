@@ -5,8 +5,28 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Accueil - Puissance 4</title>
         <link rel="stylesheet" href="/assets/static/homepage_style/homepage_style.css?v=11">
+        <link rel="stylesheet" href="/assets/static/support_style/support_style.css">
     </head>
 <body>
+    <!-- Boutons Histoire et Règles en haut à gauche -->
+    <div class="history-button-container">
+        <button id="historyBtn" class="btn-history" title="Histoire du Puissance 4">
+            📖 Histoire
+        </button>
+        <button id="rulesBtn" class="btn-history" title="Règles du jeu">
+            📋 Règles
+        </button>
+    </div>
+    
+    <!-- Boutons Support en haut à droite -->
+    <div class="support-buttons-container">
+        <button id="supportBtn" class="btn-support" title="Support">
+            💬 Support
+        </button>
+        <button id="supportAdminBtn" class="btn-support btn-support-admin" title="Support Admin" style="display: none;">
+            🛠️ Support Admin
+        </button>
+    </div>
     <!-- Modal / panneau édition profil (caché par défaut) -->
     <div id="profileModal" class="profile-modal hidden" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
         <div class="profile-modal-backdrop"></div>
@@ -259,9 +279,17 @@
             </div>
         </div>
 
-        <!-- Colonne droite : Espace vide -->
+        <!-- Colonne droite : Leaderboard -->
         <div class="right-column">
-            <!-- Espace vide pour équilibre visuel -->
+            <div class="leaderboard-section">
+                <div class="leaderboard-header">
+                    <h2>🏆 Classement</h2>
+                    <span class="leaderboard-subtitle">Top joueurs</span>
+                </div>
+                <div id="leaderboardList" class="leaderboard-list">
+                    <div class="leaderboard-loading">Chargement...</div>
+                </div>
+            </div>
         </div>
     </div>
     <script>
@@ -471,6 +499,7 @@
         }
     </script>
     <script src="/src/script/homepage_srcipt.js"></script>
+    <script src="/src/script/support_script.js"></script>
     
     <!-- Pop-up de niveau atteint -->
     <div id="levelUpPopup" class="level-up-popup hidden">
@@ -479,6 +508,271 @@
             <h2 class="level-up-title">Niveau atteint !</h2>
             <div class="level-up-number" id="levelUpNumber">2</div>
             <p class="level-up-message">Félicitations !</p>
+        </div>
+    </div>
+
+    <!-- Modal Support - Création de ticket -->
+    <div id="supportModal" class="support-modal hidden">
+        <div class="support-modal-backdrop"></div>
+        <div class="support-modal-content">
+            <div class="support-modal-header">
+                <h2>💬 Support</h2>
+                <button id="closeSupportModal" class="btn-close-support">×</button>
+            </div>
+            <div class="support-modal-body">
+                <div id="supportCreateView" class="support-view hidden">
+                    <h3>Créer un nouveau ticket</h3>
+                    <form id="createTicketForm">
+                        <div class="form-group">
+                            <label for="ticketType">Type de demande *</label>
+                            <select id="ticketType" name="ticketType" required>
+                                <option value="">Sélectionnez un type</option>
+                                <option value="question">Question générale</option>
+                                <option value="password_reset">Mot de passe oublié</option>
+                                <option value="hacked_account">Compte piraté</option>
+                                <option value="bug">Signaler un bug</option>
+                                <option value="feature">Demande de fonctionnalité</option>
+                                <option value="other">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticketSubject">Sujet *</label>
+                            <input type="text" id="ticketSubject" name="subject" required placeholder="Résumez votre problème en quelques mots">
+                        </div>
+                        <div class="form-group">
+                            <label for="ticketMessage">Description détaillée *</label>
+                            <textarea id="ticketMessage" name="message" rows="5" required placeholder="Décrivez votre problème en détail..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticketPriority">Priorité</label>
+                            <select id="ticketPriority" name="priority">
+                                <option value="low">Basse</option>
+                                <option value="medium" selected>Moyenne</option>
+                                <option value="high">Haute</option>
+                                <option value="urgent">Urgente</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-submit-ticket">Envoyer le ticket</button>
+                    </form>
+                </div>
+                <div id="supportTicketsView" class="support-view">
+                    <div class="support-tickets-header">
+                        <h3>Mes tickets</h3>
+                        <button id="btnNewTicket" class="btn-new-ticket">+ Nouveau ticket</button>
+                    </div>
+                    <div id="ticketsList" class="tickets-list"></div>
+                </div>
+                <div id="supportChatView" class="support-view hidden">
+                    <div class="support-chat-header">
+                        <button id="btnBackToTickets" class="btn-back-to-tickets">← Retour</button>
+                        <h3 id="chatTicketSubject">Ticket #<span id="chatTicketId">0</span></h3>
+                        <span id="chatTicketStatus" class="ticket-status-badge"></span>
+                    </div>
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <textarea id="chatMessageInput" placeholder="Tapez votre message..." rows="2"></textarea>
+                        <button id="btnSendMessage" class="btn-send-message">Envoyer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Support Admin -->
+    <div id="supportAdminModal" class="support-modal hidden">
+        <div class="support-modal-backdrop"></div>
+        <div class="support-modal-content support-admin-content">
+            <div class="support-modal-header">
+                <h2>🛠️ Support Admin</h2>
+                <button id="closeSupportAdminModal" class="btn-close-support">×</button>
+            </div>
+            <div class="support-modal-body">
+                <div id="adminTicketsListView" class="support-view">
+                    <div class="admin-tickets-filters">
+                        <select id="adminFilterStatus">
+                            <option value="">Tous les statuts</option>
+                            <option value="open">Ouvert</option>
+                            <option value="in_progress">En cours</option>
+                            <option value="resolved">Résolu</option>
+                            <option value="closed">Fermé</option>
+                        </select>
+                        <select id="adminFilterType">
+                            <option value="">Tous les types</option>
+                            <option value="question">Question</option>
+                            <option value="password_reset">Mot de passe</option>
+                            <option value="hacked_account">Compte piraté</option>
+                            <option value="bug">Bug</option>
+                            <option value="feature">Fonctionnalité</option>
+                            <option value="other">Autre</option>
+                        </select>
+                    </div>
+                    <div id="adminTicketsList" class="admin-tickets-list"></div>
+                </div>
+                <div id="adminChatView" class="support-view hidden">
+                    <div class="support-chat-header">
+                        <button id="btnBackToAdminTickets" class="btn-back-to-tickets">← Retour</button>
+                        <div>
+                            <h3 id="adminChatTicketSubject">Ticket #<span id="adminChatTicketId">0</span></h3>
+                            <p class="admin-ticket-user">Utilisateur: <span id="adminChatUserPseudo"></span></p>
+                        </div>
+                        <div class="admin-ticket-actions">
+                            <select id="adminTicketStatusSelect">
+                                <option value="open">Ouvert</option>
+                                <option value="in_progress">En cours</option>
+                                <option value="resolved">Résolu</option>
+                                <option value="closed">Fermé</option>
+                            </select>
+                            <button id="btnUpdateTicketStatus" class="btn-update-status">Mettre à jour</button>
+                        </div>
+                    </div>
+                    <div id="adminChatMessages" class="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <textarea id="adminChatMessageInput" placeholder="Tapez votre réponse..." rows="2"></textarea>
+                        <button id="btnSendAdminMessage" class="btn-send-message">Envoyer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Histoire du Puissance 4 -->
+    <div id="historyModal" class="history-modal hidden">
+        <div class="history-modal-backdrop"></div>
+        <div class="history-modal-content">
+            <div class="history-modal-header">
+                <h2>📖 Histoire du Puissance 4</h2>
+                <button id="closeHistoryModal" class="btn-close-history">×</button>
+            </div>
+            <div class="history-modal-body">
+                <div class="history-content">
+                    <div class="history-intro">
+                        <p>🌟 Découvrez l'histoire fascinante du jeu qui a captivé des millions de joueurs à travers le monde !</p>
+                    </div>
+                    
+                    <h3>🎯 Origines</h3>
+                    <p>Le Puissance 4, également connu sous le nom de <strong>"Connect Four"</strong> en anglais, est un jeu de stratégie créé en <strong>1974</strong> par l'ingénieur américain <strong>Howard Wexler</strong> et le designer <strong>Ned Strongin</strong>. Le jeu a été commercialisé par la société <strong>Milton Bradley</strong> (maintenant Hasbro) et est rapidement devenu un classique des jeux de société.</p>
+                    
+                    <h3>🎮 Le Concept</h3>
+                    <p>Le Puissance 4 est un jeu de société pour deux joueurs qui se joue sur une grille verticale de <strong>6 lignes et 7 colonnes</strong>. L'objectif est simple mais captivant : aligner <strong>4 jetons de sa couleur</strong> horizontalement, verticalement ou en diagonale avant son adversaire. La simplicité des règles en fait un jeu accessible à tous, tout en offrant une profondeur stratégique impressionnante.</p>
+                    
+                    <h3>📋 Règles du Jeu</h3>
+                    <ul>
+                        <li>Les joueurs alternent pour placer leurs jetons dans les colonnes</li>
+                        <li>Les jetons tombent au plus bas de la colonne grâce à la gravité</li>
+                        <li>Le premier joueur à aligner 4 jetons gagne la partie</li>
+                        <li>Si la grille est remplie sans gagnant, c'est un match nul</li>
+                    </ul>
+                    
+                    <h3>🧠 Stratégie</h3>
+                    <p>Le Puissance 4 est un jeu de stratégie où il faut à la fois <strong>attaquer</strong> (créer des alignements) et <strong>défendre</strong> (empêcher l'adversaire de gagner). Les joueurs expérimentés anticipent plusieurs coups à l'avance et créent des menaces multiples. C'est un jeu qui développe la pensée logique et la capacité d'anticipation !</p>
+                    
+                    <h3>🔄 Variantes</h3>
+                    <p>Au fil des années, plusieurs variantes passionnantes ont été créées :</p>
+                    <ul>
+                        <li><strong>Puissance 5</strong> : Aligner 5 jetons au lieu de 4 pour plus de défi</li>
+                        <li><strong>Puissance 4 en 3D</strong> : Version tridimensionnelle avec plusieurs niveaux</li>
+                        <li><strong>Puissance 4 avec gravité inversée</strong> : Les jetons montent au lieu de descendre</li>
+                    </ul>
+                    
+                    <h3>💻 Dans le Monde Numérique</h3>
+                    <p>Avec l'avènement de l'informatique, le Puissance 4 est devenu un jeu classique pour tester les algorithmes d'intelligence artificielle. En <strong>1988</strong>, <strong>James D. Allen</strong> et <strong>Victor Allis</strong> ont prouvé mathématiquement que le premier joueur peut toujours gagner s'il joue parfaitement. Cette découverte a marqué un tournant dans l'étude des jeux combinatoires.</p>
+                    
+                    <h3>✨ Fun Facts</h3>
+                    <ul>
+                        <li>Le jeu a été résolu mathématiquement : le premier joueur peut toujours gagner avec une stratégie parfaite</li>
+                        <li>Il existe plus de <strong>4 531 985 219 092</strong> positions possibles différentes</li>
+                        <li>Le record du monde de parties jouées en une heure dépasse les centaines</li>
+                        <li>Le Puissance 4 est souvent utilisé pour enseigner la programmation et l'intelligence artificielle</li>
+                        <li>Des tournois internationaux sont organisés chaque année</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Règles du Jeu -->
+    <div id="rulesModal" class="history-modal hidden">
+        <div class="history-modal-backdrop"></div>
+        <div class="history-modal-content">
+            <div class="history-modal-header">
+                <h2>📋 Règles du Puissance 4</h2>
+                <button id="closeRulesModal" class="btn-close-history">×</button>
+            </div>
+            <div class="history-modal-body">
+                <div class="history-content">
+                    <div class="history-intro">
+                        <p>🎯 Apprenez à jouer au Puissance 4 et devenez un maître de la stratégie !</p>
+                    </div>
+                    
+                    <h3>🎮 Objectif du Jeu</h3>
+                    <p>Le but du Puissance 4 est d'être le premier joueur à aligner <strong>4 jetons de sa couleur</strong> consécutivement, que ce soit :</p>
+                    <ul>
+                        <li><strong>Horizontalement</strong> : 4 jetons côte à côte sur une même ligne</li>
+                        <li><strong>Verticalement</strong> : 4 jetons l'un au-dessus de l'autre dans une même colonne</li>
+                        <li><strong>En diagonale</strong> : 4 jetons en diagonale (montante ou descendante)</li>
+                    </ul>
+                    
+                    <h3>📐 Le Plateau de Jeu</h3>
+                    <p>Le jeu se déroule sur une grille verticale composée de :</p>
+                    <ul>
+                        <li><strong>6 lignes</strong> (rangées horizontales)</li>
+                        <li><strong>7 colonnes</strong> (rangées verticales)</li>
+                        <li>Soit un total de <strong>42 emplacements</strong> possibles</li>
+                    </ul>
+                    
+                    <h3>🔄 Comment Jouer</h3>
+                    <ol>
+                        <li><strong>Choisissez une colonne</strong> : À votre tour, cliquez sur la colonne où vous souhaitez placer votre jeton</li>
+                        <li><strong>La gravité agit</strong> : Votre jeton tombe automatiquement au plus bas de la colonne, dans la première case vide disponible</li>
+                        <li><strong>Alternance</strong> : Les joueurs alternent leurs tours (rouge puis jaune, ou selon les couleurs choisies)</li>
+                        <li><strong>Victoire</strong> : Dès qu'un joueur aligne 4 jetons, la partie se termine et ce joueur remporte la victoire</li>
+                    </ol>
+                    
+                    <h3>⚡ Règles Importantes</h3>
+                    <ul>
+                        <li>Vous ne pouvez pas placer un jeton dans une colonne <strong>complètement remplie</strong></li>
+                        <li>Les jetons ne peuvent pas être déplacés une fois placés</li>
+                        <li>Si toutes les colonnes sont remplies sans qu'aucun joueur n'ait aligné 4 jetons, c'est un <strong>match nul</strong></li>
+                        <li>Le premier joueur a un léger avantage, c'est pourquoi il est recommandé d'alterner qui commence en cas de parties multiples</li>
+                    </ul>
+                    
+                    <h3>🧠 Stratégies de Base</h3>
+                    <div class="strategy-tips">
+                        <h4>💡 Conseils pour Gagner</h4>
+                        <ul>
+                            <li><strong>Contrôlez le centre</strong> : Les colonnes centrales offrent plus de possibilités d'alignement</li>
+                            <li><strong>Créez des menaces multiples</strong> : Forcez votre adversaire à défendre plusieurs alignements à la fois</li>
+                            <li><strong>Bloquez votre adversaire</strong> : Empêchez-le de compléter ses alignements de 3 jetons</li>
+                            <li><strong>Anticipez</strong> : Pensez à vos prochains coups et à ceux de votre adversaire</li>
+                            <li><strong>Évitez les pièges</strong> : Ne laissez pas votre adversaire créer des alignements en diagonale</li>
+                        </ul>
+                        
+                        <h4>⚠️ Erreurs à Éviter</h4>
+                        <ul>
+                            <li>Ne jouez pas uniquement au centre, variez vos colonnes</li>
+                            <li>Ne négligez pas la défense, bloquez les menaces adverses</li>
+                            <li>Ne laissez pas votre adversaire créer des "double menaces" (deux alignements possibles en même temps)</li>
+                            <li>Ne remplissez pas une colonne sans stratégie</li>
+                        </ul>
+                    </div>
+                    
+                    <h3>🎯 Modes de Jeu Disponibles</h3>
+                    <ul>
+                        <li><strong>Mode Classique</strong> : Le Puissance 4 traditionnel avec gravité normale</li>
+                        <li><strong>Mode Facile</strong> : Parfait pour débuter et apprendre les bases</li>
+                        <li><strong>Mode Difficile</strong> : Pour les joueurs expérimentés cherchant un défi</li>
+                        <li><strong>Mode Gravité</strong> : Une variante avec des règles de gravité modifiées</li>
+                        <li><strong>Mode 1V1</strong> : Affrontez un ami en local</li>
+                        <li><strong>Mode IA</strong> : Défiez l'intelligence artificielle à différents niveaux</li>
+                    </ul>
+                    
+                    <h3>🏆 Système de Niveaux</h3>
+                    <p>Gagnez de l'<strong>XP (Expérience)</strong> en remportant des parties ! Plus vous gagnez, plus vous montez de niveau. Chaque victoire vous rapporte des points d'expérience qui vous permettent de progresser dans le classement.</p>
+                    
+                    <h3>✨ Bonne Partie !</h3>
+                    <p>Maintenant que vous connaissez les règles, lancez-vous dans une partie et amusez-vous ! N'oubliez pas : la pratique rend parfait. Plus vous jouerez, plus vous développerez votre stratégie et votre capacité à anticiper les coups de votre adversaire.</p>
+                </div>
+            </div>
         </div>
     </div>
 </body>

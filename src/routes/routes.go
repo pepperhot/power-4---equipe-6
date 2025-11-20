@@ -11,6 +11,7 @@ import (
 	"power4/src/auth"
 	"power4/src/config"
 	"power4/src/game"
+	"power4/src/support"
 	"strings"
 )
 
@@ -264,4 +265,13 @@ func WayLink() {
 	http.HandleFunc("/state", game.GetState)
 	http.HandleFunc("/reset", game.ResetGame)
 	http.HandleFunc("/award-xp", game.HandleAwardXP)
+	http.HandleFunc("/leaderboard", game.GetLeaderboard)
+	
+	// Routes support
+	http.HandleFunc("/support/create", support.CreateTicket)
+	http.HandleFunc("/support/tickets", support.GetUserTickets)
+	http.HandleFunc("/support/all", support.GetAllTickets)
+	http.HandleFunc("/support/messages", support.GetTicketMessages)
+	http.HandleFunc("/support/message/add", support.AddMessage)
+	http.HandleFunc("/support/status/update", support.UpdateTicketStatus)
 }
