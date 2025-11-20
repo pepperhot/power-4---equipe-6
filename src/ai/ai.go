@@ -6,14 +6,9 @@ import (
 	"time"
 )
 
-// -------------------------------
-// CONFIGURATION DE L'IA
-// -------------------------------
-
-// Niveau de l'IA (facile, medium, hard, impossible)
 var Level = "medium"
 
-// SetLevel définit le niveau de l'IA
+// SetLevel définit le niveau de difficulté de l'IA
 func SetLevel(level string) {
 	if level == "" {
 		level = "medium"
@@ -21,7 +16,7 @@ func SetLevel(level string) {
 	Level = level
 }
 
-// GetLevel retourne le niveau actuel de l'IA
+// GetLevel retourne le niveau de difficulté actuel de l'IA
 func GetLevel() string {
 	return Level
 }
@@ -42,7 +37,7 @@ func GetAIName() string {
 	}
 }
 
-// IsValidLevel vérifie si le niveau fourni est valide
+// IsValidLevel vérifie si un niveau de difficulté est valide
 func IsValidLevel(level string) bool {
 	switch level {
 	case "easy", "medium", "hard", "impossible":
@@ -52,16 +47,11 @@ func IsValidLevel(level string) bool {
 	}
 }
 
-// -------------------------------
-// FONCTIONS D'IA
-// -------------------------------
-
-// GetBestMove retourne la meilleure colonne à jouer selon le niveau de difficulté
+// GetBestMove calcule le meilleur coup pour l'IA selon son niveau
 func GetBestMove() int {
 	rows, cols := config.GetDimensions()
-	aiPlayer := "J" // L'IA est toujours le joueur 2 (J)
-	humanPlayer := "R" // Le joueur humain est toujours le joueur 1 (R)
-
+	aiPlayer := "J"
+	humanPlayer := "R"
 	switch Level {
 	case "easy":
 		return getEasyMove(cols)
@@ -76,47 +66,32 @@ func GetBestMove() int {
 	}
 }
 
-// getEasyMove : L'IA joue presque aléatoirement (avec quelques erreurs)
+// getEasyMove génère un coup aléatoire pour le niveau facile
 func getEasyMove(cols int) int {
 	rand.Seed(time.Now().UnixNano())
-	
-	// 70% de chance de jouer aléatoirement
-	// 30% de chance de jouer dans une colonne valide mais pas optimale
 	if rand.Float32() < 0.7 {
-		// Jouer complètement aléatoirement
 		return rand.Intn(cols)
 	}
-	
-	// Parfois jouer dans une colonne valide mais pas la meilleure
 	validCols := getValidColumns(cols)
 	if len(validCols) > 0 {
-		// Prendre une colonne aléatoire parmi les valides
 		return validCols[rand.Intn(len(validCols))]
 	}
-	
 	return rand.Intn(cols)
 }
 
-// getMediumMove : L'IA essaie de bloquer l'adversaire et fait des alignements simples
+// getMediumMove calcule un coup stratégique pour le niveau moyen
 func getMediumMove(rows, cols int, aiPlayer, humanPlayer string) int {
-	// 1. Vérifier si on peut gagner
 	if col := canWin(rows, cols, aiPlayer); col != -1 {
 		return col
 	}
-	
-	// 2. Vérifier si on doit bloquer l'adversaire
 	if col := canWin(rows, cols, humanPlayer); col != -1 {
 		return col
 	}
-	
-	// 3. Jouer au centre ou près du centre (stratégie de base)
 	center := cols / 2
 	validCols := getValidColumns(cols)
 	if len(validCols) == 0 {
 		return center
 	}
-	
-	// Préférer le centre et les colonnes adjacentes
 	preferredCols := []int{center}
 	if center > 0 {
 		preferredCols = append(preferredCols, center-1)
@@ -124,126 +99,89 @@ func getMediumMove(rows, cols int, aiPlayer, humanPlayer string) int {
 	if center < cols-1 {
 		preferredCols = append(preferredCols, center+1)
 	}
-	
 	for _, prefCol := range preferredCols {
 		if isValidColumn(prefCol, cols) {
 			return prefCol
 		}
 	}
-	
-	// Sinon, prendre une colonne valide aléatoire
 	return validCols[rand.Intn(len(validCols))]
 }
 
-// getHardMove : Utilise minimax avec profondeur limitée
+// getHardMove calcule un coup optimisé avec minimax pour le niveau difficile
 func getHardMove(rows, cols int, aiPlayer, humanPlayer string) int {
-	// 1. Vérifier si on peut gagner
 	if col := canWin(rows, cols, aiPlayer); col != -1 {
 		return col
 	}
-	
-	// 2. Vérifier si on doit bloquer l'adversaire
 	if col := canWin(rows, cols, humanPlayer); col != -1 {
 		return col
 	}
-	
-	// 3. Utiliser minimax avec profondeur 4
 	bestCol := -1
 	bestScore := -10000
-	
 	validCols := getValidColumns(cols)
 	for _, col := range validCols {
 		row := getDropRow(col, rows)
 		if row == -1 {
 			continue
 		}
-		
-		// Simuler le coup
 		config.Grid[row][col] = aiPlayer
 		score := minimax(rows, cols, 4, false, aiPlayer, humanPlayer, -10000, 10000)
-		config.Grid[row][col] = "" // Annuler le coup
-		
+		config.Grid[row][col] = ""
 		if score > bestScore {
 			bestScore = score
 			bestCol = col
 		}
 	}
-	
 	if bestCol != -1 {
 		return bestCol
 	}
-	
-	// Fallback : jouer au centre
 	center := cols / 2
 	if isValidColumn(center, cols) {
 		return center
 	}
-	
-	// Dernier recours : colonne valide aléatoire
 	if len(validCols) > 0 {
 		return validCols[rand.Intn(len(validCols))]
 	}
-	
 	return cols / 2
 }
 
-// getImpossibleMove : Utilise minimax avec alpha-beta pruning, profondeur maximale
+// getImpossibleMove calcule le meilleur coup avec minimax profond pour le niveau impossible
 func getImpossibleMove(rows, cols int, aiPlayer, humanPlayer string) int {
-	// 1. Vérifier si on peut gagner
 	if col := canWin(rows, cols, aiPlayer); col != -1 {
 		return col
 	}
-	
-	// 2. Vérifier si on doit bloquer l'adversaire
 	if col := canWin(rows, cols, humanPlayer); col != -1 {
 		return col
 	}
-	
-	// 3. Utiliser minimax avec alpha-beta pruning, profondeur 6 (optimisé pour la vitesse)
 	bestCol := -1
 	bestScore := -10000
-	
 	validCols := getValidColumns(cols)
 	for _, col := range validCols {
 		row := getDropRow(col, rows)
 		if row == -1 {
 			continue
 		}
-		
-		// Simuler le coup
 		config.Grid[row][col] = aiPlayer
 		score := minimax(rows, cols, 6, false, aiPlayer, humanPlayer, -10000, 10000)
-		config.Grid[row][col] = "" // Annuler le coup
-		
+		config.Grid[row][col] = ""
 		if score > bestScore {
 			bestScore = score
 			bestCol = col
 		}
 	}
-	
 	if bestCol != -1 {
 		return bestCol
 	}
-	
-	// Fallback : jouer au centre
 	center := cols / 2
 	if isValidColumn(center, cols) {
 		return center
 	}
-	
-	// Dernier recours : colonne valide aléatoire
 	if len(validCols) > 0 {
 		return validCols[rand.Intn(len(validCols))]
 	}
-	
 	return cols / 2
 }
 
-// -------------------------------
-// FONCTIONS UTILITAIRES
-// -------------------------------
-
-// canWin vérifie si un joueur peut gagner en jouant dans une colonne
+// canWin vérifie si un joueur peut gagner au prochain coup
 func canWin(rows, cols int, player string) int {
 	validCols := getValidColumns(cols)
 	for _, col := range validCols {
@@ -251,12 +189,9 @@ func canWin(rows, cols int, player string) int {
 		if row == -1 {
 			continue
 		}
-		
-		// Simuler le coup
 		config.Grid[row][col] = player
 		won := checkWinSimulation(row, col, rows, cols, player)
-		config.Grid[row][col] = "" // Annuler le coup
-		
+		config.Grid[row][col] = ""
 		if won {
 			return col
 		}
@@ -264,10 +199,9 @@ func canWin(rows, cols int, player string) int {
 	return -1
 }
 
-// checkWinSimulation vérifie si un joueur a gagné (simulation)
+// checkWinSimulation simule un coup et vérifie s'il crée un alignement gagnant
 func checkWinSimulation(row, col, rows, cols int, player string) bool {
 	target := config.GetWinLength()
-	
 	check := func(dr, dc int) bool {
 		count := 1
 		for i := 1; i < target; i++ {
@@ -286,19 +220,14 @@ func checkWinSimulation(row, col, rows, cols int, player string) bool {
 		}
 		return count >= target
 	}
-	
 	return check(0, 1) || check(1, 0) || check(1, 1) || check(1, -1)
 }
 
-// minimax implémente l'algorithme minimax avec alpha-beta pruning
+// minimax implémente l'algorithme minimax avec élagage alpha-bêta pour trouver le meilleur coup
 func minimax(rows, cols, depth int, isMaximizing bool, aiPlayer, humanPlayer string, alpha, beta int) int {
-	// Vérifier les conditions de fin
 	if depth == 0 {
 		return evaluateBoard(rows, cols, aiPlayer, humanPlayer)
 	}
-	
-	// Vérifier si quelqu'un a gagné en parcourant la grille
-	// (on vérifie directement dans la grille plutôt que d'utiliser canWin récursivement)
 	for i := 0; i < rows; i++ {
 		for j := 0; j < cols; j++ {
 			if config.Grid[i][j] == aiPlayer {
@@ -312,38 +241,29 @@ func minimax(rows, cols, depth int, isMaximizing bool, aiPlayer, humanPlayer str
 			}
 		}
 	}
-	
 	validCols := getValidColumns(cols)
 	if len(validCols) == 0 {
-		return 0 // Match nul
+		return 0
 	}
-	
 	if isMaximizing {
 		maxScore := -10000
-		// Trier les colonnes par priorité (centre d'abord) pour améliorer le pruning
 		center := cols / 2
-		// Réorganiser validCols pour mettre le centre en premier si possible
 		sortedCols := make([]int, len(validCols))
 		copy(sortedCols, validCols)
-		// Trouver le centre et le mettre en premier
 		for i, col := range sortedCols {
 			if col == center {
-				// Échanger avec le premier
 				sortedCols[0], sortedCols[i] = sortedCols[i], sortedCols[0]
 				break
 			}
 		}
-		
 		for _, col := range sortedCols {
 			row := getDropRow(col, rows)
 			if row == -1 {
 				continue
 			}
-			
 			config.Grid[row][col] = aiPlayer
 			score := minimax(rows, cols, depth-1, false, aiPlayer, humanPlayer, alpha, beta)
 			config.Grid[row][col] = ""
-			
 			if score > maxScore {
 				maxScore = score
 			}
@@ -351,7 +271,7 @@ func minimax(rows, cols, depth int, isMaximizing bool, aiPlayer, humanPlayer str
 				alpha = score
 			}
 			if beta <= alpha {
-				break // Alpha-beta pruning
+				break
 			}
 		}
 		return maxScore
@@ -362,11 +282,9 @@ func minimax(rows, cols, depth int, isMaximizing bool, aiPlayer, humanPlayer str
 			if row == -1 {
 				continue
 			}
-			
 			config.Grid[row][col] = humanPlayer
 			score := minimax(rows, cols, depth-1, true, aiPlayer, humanPlayer, alpha, beta)
 			config.Grid[row][col] = ""
-			
 			if score < minScore {
 				minScore = score
 			}
@@ -374,22 +292,18 @@ func minimax(rows, cols, depth int, isMaximizing bool, aiPlayer, humanPlayer str
 				beta = score
 			}
 			if beta <= alpha {
-				break // Alpha-beta pruning
+				break
 			}
 		}
 		return minScore
 	}
 }
 
-// evaluateBoard évalue la position du plateau
+// evaluateBoard évalue la position du plateau et retourne un score
 func evaluateBoard(rows, cols int, aiPlayer, humanPlayer string) int {
 	score := 0
-	
-	// Évaluer les alignements possibles
 	score += countThreats(rows, cols, aiPlayer) * 100
 	score -= countThreats(rows, cols, humanPlayer) * 100
-	
-	// Bonus pour le centre
 	center := cols / 2
 	for i := 0; i < rows; i++ {
 		if config.Grid[i][center] == aiPlayer {
@@ -398,18 +312,14 @@ func evaluateBoard(rows, cols int, aiPlayer, humanPlayer string) int {
 			score -= 10
 		}
 	}
-	
 	return score
 }
 
-// countThreats compte les menaces (alignements de 2 ou 3)
+// countThreats compte le nombre de menaces (alignements partiels) d'un joueur
 func countThreats(rows, cols int, player string) int {
 	count := 0
 	target := config.GetWinLength()
-	
-	// Vérifier toutes les directions
 	directions := [][]int{{0, 1}, {1, 0}, {1, 1}, {1, -1}}
-	
 	for _, dir := range directions {
 		dr, dc := dir[0], dir[1]
 		for i := 0; i < rows; i++ {
@@ -429,25 +339,22 @@ func countThreats(rows, cols int, player string) int {
 			}
 		}
 	}
-	
 	return count
 }
 
-// getValidColumns retourne la liste des colonnes valides (non pleines)
+// getValidColumns retourne la liste des colonnes où un jeton peut être placé
 func getValidColumns(cols int) []int {
 	valid := []int{}
 	rows, _ := config.GetDimensions()
-	
 	for col := 0; col < cols; col++ {
 		if getDropRow(col, rows) != -1 {
 			valid = append(valid, col)
 		}
 	}
-	
 	return valid
 }
 
-// isValidColumn vérifie si une colonne est valide
+// isValidColumn vérifie si une colonne peut encore recevoir un jeton
 func isValidColumn(col, cols int) bool {
 	if col < 0 || col >= cols {
 		return false
@@ -464,17 +371,15 @@ func abs(x int) int {
 	return x
 }
 
-// getDropRow trouve la ligne où le jeton tombera dans une colonne
+// getDropRow trouve la ligne où un jeton tombera dans une colonne donnée
 func getDropRow(col, rows int) int {
 	if config.CurrentMode == "gravity" {
-		// Gravité inversée: on remplit depuis le haut
 		for i := 0; i < rows; i++ {
 			if config.Grid[i][col] == "" {
 				return i
 			}
 		}
 	} else {
-		// Gravité normale: on remplit depuis le bas
 		for i := rows - 1; i >= 0; i-- {
 			if config.Grid[i][col] == "" {
 				return i

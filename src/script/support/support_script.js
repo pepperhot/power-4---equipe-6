@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Vérifier si l'utilisateur est admin ou propriétaire
+// checkAdminStatus vérifie si l'utilisateur connecté est administrateur ou propriétaire
 async function checkAdminStatus() {
     try {
         const adminBtn = document.getElementById('supportAdminBtn');
@@ -54,6 +55,7 @@ async function checkAdminStatus() {
 }
 
 // Configuration des event listeners
+// setupEventListeners configure tous les écouteurs d'événements pour les modals de support
 function setupEventListeners() {
     // Boutons Support
     const supportBtn = document.getElementById('supportBtn');
@@ -181,7 +183,7 @@ function setupEventListeners() {
     }
 }
 
-// Ouvrir le modal Support
+// openSupportModal ouvre le modal de support utilisateur
 function openSupportModal() {
     const modal = document.getElementById('supportModal');
     if (modal) {
@@ -205,7 +207,7 @@ function openSupportModal() {
     }
 }
 
-// Fermer le modal Support
+// closeSupportModal ferme le modal de support utilisateur
 function closeSupportModal() {
     const modal = document.getElementById('supportModal');
     if (modal) {
@@ -215,7 +217,7 @@ function closeSupportModal() {
     }
 }
 
-// Ouvrir le modal Support Admin
+// openSupportAdminModal ouvre le modal de support administrateur
 function openSupportAdminModal() {
     console.log('[SUPPORT ADMIN] Ouverture du modal admin');
     const modal = document.getElementById('supportAdminModal');
@@ -229,7 +231,7 @@ function openSupportAdminModal() {
     }
 }
 
-// Fermer le modal Support Admin
+// closeSupportAdminModal ferme le modal de support administrateur
 function closeSupportAdminModal() {
     const modal = document.getElementById('supportAdminModal');
     if (modal) {
@@ -239,7 +241,7 @@ function closeSupportAdminModal() {
     }
 }
 
-// Afficher la vue de création de ticket
+// showCreateTicketView affiche le formulaire de création de ticket
 function showCreateTicketView() {
     const createView = document.getElementById('supportCreateView');
     const ticketsView = document.getElementById('supportTicketsView');
@@ -253,7 +255,7 @@ function showCreateTicketView() {
     stopAutoRefresh();
 }
 
-// Afficher la liste des tickets
+// showTicketsListView affiche la liste des tickets de l'utilisateur
 function showTicketsListView() {
     const createView = document.getElementById('supportCreateView');
     const ticketsView = document.getElementById('supportTicketsView');
@@ -266,7 +268,7 @@ function showTicketsListView() {
     loadUserTickets();
 }
 
-// Afficher le chat d'un ticket
+// showChatView affiche la conversation d'un ticket spécifique
 function showChatView(ticketId) {
     const createView = document.getElementById('supportCreateView');
     const ticketsView = document.getElementById('supportTicketsView');
@@ -281,7 +283,7 @@ function showChatView(ticketId) {
     startAutoRefresh();
 }
 
-// Créer un nouveau ticket
+// handleCreateTicket gère la soumission du formulaire de création de ticket
 async function handleCreateTicket(e) {
     e.preventDefault();
     
@@ -314,7 +316,7 @@ async function handleCreateTicket(e) {
     }
 }
 
-// Charger les tickets de l'utilisateur
+// loadUserTickets charge tous les tickets de l'utilisateur connecté
 async function loadUserTickets() {
     try {
         console.log('[SUPPORT] Chargement des tickets...');
@@ -334,7 +336,7 @@ async function loadUserTickets() {
     }
 }
 
-// Afficher les tickets de l'utilisateur
+// displayUserTickets affiche la liste des tickets dans l'interface utilisateur
 function displayUserTickets(tickets) {
     const ticketsList = document.getElementById('ticketsList');
     if (!ticketsList) {
@@ -369,7 +371,7 @@ function displayUserTickets(tickets) {
     }).join('');
 }
 
-// Charger les messages d'un ticket
+// loadTicketMessages charge tous les messages d'un ticket spécifique
 async function loadTicketMessages(ticketId) {
     try {
         const response = await fetch(`/support/messages?ticketId=${ticketId}`);
@@ -393,7 +395,7 @@ async function loadTicketMessages(ticketId) {
     }
 }
 
-// Afficher les messages
+// displayMessages affiche les messages dans le conteneur de chat
 function displayMessages(messages, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -412,7 +414,7 @@ function displayMessages(messages, containerId) {
     container.scrollTop = container.scrollHeight;
 }
 
-// Envoyer un message
+// sendMessage envoie un nouveau message dans un ticket
 async function sendMessage() {
     const input = document.getElementById('chatMessageInput');
     if (!input || !input.value.trim() || !currentTicketId) return;
@@ -443,7 +445,7 @@ async function sendMessage() {
     }
 }
 
-// Charger tous les tickets (admin)
+// loadAdminTickets charge tous les tickets pour l'interface administrateur
 async function loadAdminTickets() {
     try {
         console.log('[SUPPORT ADMIN] Chargement des tickets...');
@@ -483,7 +485,7 @@ async function loadAdminTickets() {
     }
 }
 
-// Afficher les tickets admin
+// displayAdminTickets affiche la liste des tickets dans l'interface admin
 function displayAdminTickets(tickets) {
     const ticketsList = document.getElementById('adminTicketsList');
     if (!ticketsList) {
@@ -520,7 +522,7 @@ function displayAdminTickets(tickets) {
     }).join('');
 }
 
-// Afficher la vue admin tickets list
+// showAdminTicketsListView affiche la vue liste des tickets pour l'admin
 function showAdminTicketsListView() {
     const listView = document.getElementById('adminTicketsListView');
     const chatView = document.getElementById('adminChatView');
@@ -532,7 +534,7 @@ function showAdminTicketsListView() {
     stopAutoRefresh();
 }
 
-// Afficher le chat admin
+// showAdminChatView affiche la conversation d'un ticket pour l'admin
 async function showAdminChatView(ticketId) {
     const listView = document.getElementById('adminTicketsListView');
     const chatView = document.getElementById('adminChatView');
@@ -548,7 +550,7 @@ async function showAdminChatView(ticketId) {
     startAutoRefresh();
 }
 
-// Charger les détails d'un ticket (admin)
+// loadAdminTicketDetails charge les détails complets d'un ticket pour l'admin
 async function loadAdminTicketDetails(ticketId) {
     try {
         const response = await fetch('/support/all');
@@ -591,7 +593,7 @@ async function loadAdminTicketDetails(ticketId) {
     }
 }
 
-// Charger les messages admin
+// loadAdminTicketMessages charge les messages d'un ticket pour l'admin
 async function loadAdminTicketMessages(ticketId) {
     try {
         const response = await fetch(`/support/messages?ticketId=${ticketId}`);
@@ -605,7 +607,7 @@ async function loadAdminTicketMessages(ticketId) {
     }
 }
 
-// Envoyer un message admin
+// sendAdminMessage envoie un message admin dans un ticket
 async function sendAdminMessage() {
     const input = document.getElementById('adminChatMessageInput');
     if (!input) {
@@ -656,7 +658,7 @@ async function sendAdminMessage() {
     }
 }
 
-// Mettre à jour le statut d'un ticket (admin)
+// updateTicketStatus met à jour le statut d'un ticket (admin uniquement)
 async function updateTicketStatus() {
     if (!currentTicketId) return;
     
@@ -689,7 +691,7 @@ async function updateTicketStatus() {
     }
 }
 
-// Auto-refresh des messages
+// startAutoRefresh démarre le rafraîchissement automatique des messages
 function startAutoRefresh() {
     stopAutoRefresh();
     refreshInterval = setInterval(() => {
@@ -703,6 +705,7 @@ function startAutoRefresh() {
     }, 3000); // Rafraîchir toutes les 3 secondes
 }
 
+// stopAutoRefresh arrête le rafraîchissement automatique des messages
 function stopAutoRefresh() {
     if (refreshInterval) {
         clearInterval(refreshInterval);
@@ -710,7 +713,7 @@ function stopAutoRefresh() {
     }
 }
 
-// Fonctions utilitaires
+// getStatusLabel retourne le libellé français d'un statut de ticket
 function getStatusLabel(status) {
     const labels = {
         'open': 'Ouvert',
@@ -721,6 +724,7 @@ function getStatusLabel(status) {
     return labels[status] || status;
 }
 
+// getTypeLabel retourne le libellé français d'un type de ticket
 function getTypeLabel(type) {
     const labels = {
         'question': 'Question',
@@ -733,11 +737,13 @@ function getTypeLabel(type) {
     return labels[type] || type;
 }
 
+// formatDate formate une date au format français (JJ/MM/AAAA)
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+// formatDateTime formate une date et heure au format français
 function formatDateTime(dateString) {
     const date = new Date(dateString);
     return date.toLocaleString('fr-FR', { 
@@ -749,6 +755,7 @@ function formatDateTime(dateString) {
     });
 }
 
+// escapeHtml échappe les caractères HTML pour éviter les injections XSS
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;

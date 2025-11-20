@@ -377,7 +377,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let profile = { firstName: '', lastName: '', pseudo: '', avatar: '', bio: '', country: '', xp: 0, level: 1 };
 
     // Fonction pour charger le profil depuis la DB via /profile
-    async function loadProfileFromDB() {
+    // loadProfileFromDB charge les informations du profil utilisateur depuis la base de données
+async function loadProfileFromDB() {
         console.log('[HOMEPAGE] Chargement du profil...');
         try {
             const res = await fetch('/profile');
@@ -433,6 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // renderProfile affiche les informations du profil dans l'interface
     function renderProfile() {
         if (profileAvatar) {
             if (profile.avatar) {
@@ -748,6 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Fonction pour animer la barre d'XP après une victoire
+// animateXPBar anime la barre de progression XP
 function animateXPBar() {
     const xpGained = localStorage.getItem('xpGained');
     const newXP = localStorage.getItem('newXP');
@@ -793,6 +796,7 @@ function animateXPBar() {
 }
 
 // Fonction pour animer la progression de l'XP
+// animateXPProgress anime la progression de la barre d'XP entre deux valeurs
 function animateXPProgress(startXP, endXP, level, progressBar, xpRemainingEl) {
     const xpForCurrentLevel = (level - 1) * 100;
     const startXPInLevel = Math.max(0, startXP - xpForCurrentLevel);
@@ -837,6 +841,7 @@ function animateXPProgress(startXP, endXP, level, progressBar, xpRemainingEl) {
 }
 
 // Fonction pour animer le changement de niveau
+// animateLevelUp anime le changement de niveau avec un effet de compteur
 function animateLevelUp(startLevel, endLevel, levelElement) {
     if (!levelElement) return;
     
@@ -863,6 +868,7 @@ function animateLevelUp(startLevel, endLevel, levelElement) {
 }
 
 // Fonction pour afficher le pop-up de niveau atteint
+// showLevelUpPopup affiche une popup de félicitations lors d'un gain de niveau
 function showLevelUpPopup(level) {
     const popup = document.getElementById('levelUpPopup');
     const levelNumber = document.getElementById('levelUpNumber');
@@ -884,6 +890,7 @@ function showLevelUpPopup(level) {
 }
 
 // Fonction pour vérifier le statut admin et afficher/masquer le bouton Dashboard
+// checkAdminStatus vérifie si l'utilisateur connecté est administrateur
 async function checkAdminStatus() {
     try {
         const dashboardLink = document.getElementById('dashboardLink');
@@ -922,6 +929,7 @@ async function checkAdminStatus() {
 }
 
 // Charger le leaderboard
+// loadLeaderboard charge le classement des joueurs depuis le serveur
 async function loadLeaderboard() {
     console.log('[LEADERBOARD] Début du chargement...');
     const leaderboardList = document.getElementById('leaderboardList');
@@ -951,6 +959,7 @@ async function loadLeaderboard() {
 }
 
 // Afficher le leaderboard
+// displayLeaderboard affiche le classement dans l'interface
 function displayLeaderboard(leaderboard) {
     const leaderboardList = document.getElementById('leaderboardList');
     if (!leaderboardList) return;
@@ -990,6 +999,7 @@ function displayLeaderboard(leaderboard) {
 }
 
 // Fonction pour échapper le HTML
+// escapeHtml échappe les caractères HTML pour éviter les injections XSS
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');

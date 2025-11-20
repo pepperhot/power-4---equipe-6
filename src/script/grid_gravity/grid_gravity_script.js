@@ -1,6 +1,7 @@
 // Gravity Mode: Jeu Puissance 4 - Script indépendant
 let isAnimating = false;
 
+// applyPlayerColors applique les couleurs des joueurs depuis le localStorage
 async function applyPlayerColors() {
     const player1Color = localStorage.getItem("player1Color") || "#ff0000";
     const player2Color = localStorage.getItem("player2Color") || "#ffff00";
@@ -24,6 +25,7 @@ async function applyPlayerColors() {
     }
 }
 
+// loadPlayerNames charge les noms des joueurs depuis le serveur
 async function loadPlayerNames() {
     try {
         const response = await fetch('/players');
@@ -46,6 +48,7 @@ async function loadPlayerNames() {
     }
 }
 
+// getTrsAndCells retourne les lignes du tableau et les dimensions de la grille
 function getTrsAndCells() {
     // retourne [trs, nb_rows, nb_cols], pour maj grille
     const trs = Array.from(document.querySelectorAll("table tr"));
@@ -55,6 +58,7 @@ function getTrsAndCells() {
     return [trs, nb_rows, nb_cols];
 }
 
+// updateGridGravity met à jour l'affichage de la grille en mode gravité
 function updateGridGravity(grid) {
     // S'assurer que les couleurs sont appliquées
     const player1Color = localStorage.getItem('player1Color') || '#ff0000';
@@ -79,6 +83,7 @@ function updateGridGravity(grid) {
     }
 }
 
+// findStopRowGravity trouve la ligne d'arrêt pour un jeton en mode gravité (remonte vers le haut)
 function findStopRowGravity(grid, col) {
     for(let row=0; row<grid.length; row++){
         if(grid[row][col]!=="") return row-1; // s'arrête juste en-dessous
@@ -88,6 +93,7 @@ function findStopRowGravity(grid, col) {
     return -1;
 }
 
+// playGravityDrop anime la montée d'un jeton vers le haut en mode gravité
 async function playGravityDrop(colIndex, grid, colorClass) {
     const [trs, nb_rows] = getTrsAndCells();
     const stopRow = findStopRowGravity(grid, colIndex);
@@ -126,6 +132,7 @@ async function playGravityDrop(colIndex, grid, colorClass) {
     updateGridGravity(grid);
 }
 
+// findDropRow trouve la ligne où un jeton tombera dans une colonne
 function findDropRow(grid, col) {
     for(let row=grid.length-1; row>=0; row--){
         if(grid[row][col]==="") return row;
@@ -133,6 +140,7 @@ function findDropRow(grid, col) {
     return -1;
 }
 
+// getPlayerFromGrid récupère le joueur qui a un jeton dans une colonne
 function getPlayerFromGrid(grid, col) {
     // renvoie qui vient de jouer dans la colonne col
     for(let row = 0; row < grid.length; row++) {
@@ -143,6 +151,7 @@ function getPlayerFromGrid(grid, col) {
     return "R";
 }
 
+// checkWinnerK vérifie s'il y a un alignement de K jetons pour déterminer le gagnant
 function checkWinnerK(grid, K) {
     if (!grid || !grid.length) return "";
     const R = grid.length, C = grid[0].length;

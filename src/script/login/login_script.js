@@ -1,3 +1,4 @@
+// showTab affiche l'onglet sélectionné (connexion ou inscription)
 function showTab(event, tabName) {
 document.querySelectorAll('.form-container').forEach(el => {
     el.classList.remove('active');
@@ -12,6 +13,7 @@ event.target.classList.add('active');
 }
 
 // Affiche un message
+// showMessage affiche un message de succès ou d'erreur temporaire
 function showMessage(elementId, message, isSuccess) {
 const msgElement = document.getElementById(elementId);
 msgElement.textContent = message;
@@ -25,6 +27,7 @@ setTimeout(() => {
 }
 
 // Animation du titre au chargement
+// animateTitle anime le titre au chargement de la page
 function animateTitle() {
     const title = document.getElementById('animatedTitle');
     if (title) {

@@ -2,6 +2,7 @@ console.log("script.js chargé");
 
 let isAnimating = false;
 
+// applyPlayerColors applique les couleurs des joueurs depuis le localStorage
 async function applyPlayerColors() {
     const player1Color = localStorage.getItem('player1Color') || '#ff0000';
     const player2Color = localStorage.getItem('player2Color') || '#ffff00';
@@ -29,6 +30,7 @@ async function applyPlayerColors() {
     }
 }
 
+// loadPlayerNames charge les noms des joueurs depuis le serveur
 async function loadPlayerNames() {
     try {
         const response = await fetch('/players');
@@ -51,6 +53,7 @@ async function loadPlayerNames() {
     }
 }
 
+// updateColorIndicators met à jour les indicateurs de couleur des joueurs
 function updateColorIndicators() {
     const player1Color = localStorage.getItem('player1Color') || '#ff0000';
     const player2Color = localStorage.getItem('player2Color') || '#ffff00';
@@ -64,6 +67,7 @@ function updateColorIndicators() {
     if (color2) color2.style.background = player2Color;
 }
 
+// initGridScript initialise la grille de jeu et configure les événements
 async function initGridScript() {
     // Réinitialiser la partie sur le backend avant de charger
     try {
@@ -255,6 +259,7 @@ if (document.readyState === 'loading') {
 try { setInterval(checkWinner, 1500); } catch(_) {}
 
 // CHARGEMENT ET MISE À JOUR DE LA GRILLE 
+// loadGrid charge l'état actuel de la grille depuis le serveur
 async function loadGrid() {
     try { 
         // S'assurer que la partie est réinitialisée avant de charger
@@ -279,6 +284,7 @@ async function loadGrid() {
     catch(e){ console.error("Erreur chargement :", e); }
 }
 
+// updateGrid met à jour l'affichage de la grille avec les nouvelles données
 function updateGrid(gridData) {
     // S'assurer que les couleurs sont appliquées
     const player1Color = localStorage.getItem('player1Color') || '#ff0000';
@@ -328,6 +334,7 @@ function updateGrid(gridData) {
 }
 
 //  ANIMATION DU JETON 
+// playDropAnimation anime la chute d'un jeton dans une colonne
 async function playDropAnimation(player, colIndex, grid) {
     const finalRow = getPlacedRow(grid, colIndex);
     if(finalRow === -1) return;
@@ -354,6 +361,7 @@ async function playDropAnimation(player, colIndex, grid) {
     }
 }
 
+// getPlacedRow trouve la ligne où un jeton a été placé dans une colonne
 function getPlacedRow(grid, colIndex) {
     // Normal: le plus haut jeton (depuis le haut)
     for(let row = 0; row < grid.length; row++) {
@@ -365,6 +373,7 @@ function getPlacedRow(grid, colIndex) {
 }
 
 // --- JOUEUR COURANT CÔTÉ CLIENT ---
+// getPlayerFromGrid récupère le joueur qui a un jeton dans une colonne
 function getPlayerFromGrid(grid, colIndex) {
     // Normal: le plus haut jeton (depuis le haut)
     for(let row = 0; row < grid.length; row++) {
@@ -376,6 +385,7 @@ function getPlayerFromGrid(grid, colIndex) {
 }
 
 // --- VÉRIFICATION DU GAGNANT ---
+// checkWinner vérifie s'il y a un gagnant et redirige vers la page de victoire
 async function checkWinner() {
     try {
         const data = await (await fetch('/winner')).json();
@@ -387,6 +397,7 @@ async function checkWinner() {
 }
 
 // Détection d'une victoire en K alignés (compte dans les 2 sens)
+// findWinnerK vérifie s'il y a un alignement de K jetons pour déterminer le gagnant
 function findWinnerK(grid, K) {
     if (!grid || !grid.length) return "";
     const R = grid.length, C = grid[0].length;

@@ -2,7 +2,7 @@ console.log("grid_hard_script.js chargé");
 
 let isAnimating = false;
 
-// --- Récupère les couleurs sauvegardées ---
+// applyPlayerColors applique les couleurs des joueurs depuis le localStorage
 async function applyPlayerColors() {
     const player1Color = localStorage.getItem('player1Color') || '#ff0000';
     const player2Color = localStorage.getItem('player2Color') || '#ffff00';
@@ -26,7 +26,7 @@ async function applyPlayerColors() {
     }
 }
 
-// --- Chargement des noms depuis le serveur ---
+// loadPlayerNames charge les noms des joueurs depuis le serveur
 async function loadPlayerNames() {
     try {
         const response = await fetch('/players');
@@ -49,6 +49,7 @@ async function loadPlayerNames() {
     }
 }
 
+// updateColorIndicators met à jour les indicateurs de couleur des joueurs
 function updateColorIndicators() {
     const player1Color = localStorage.getItem('player1Color') || '#ff0000';
     const player2Color = localStorage.getItem('player2Color') || '#ffff00';
@@ -62,6 +63,7 @@ function updateColorIndicators() {
     if (color2) color2.style.background = player2Color;
 }
 
+// initGridHardScript initialise la grille en mode difficile (grille 7x8, 7 alignés pour gagner)
 async function initGridHardScript() {
     // Réinitialiser la partie sur le backend avant de charger
     try {
@@ -192,7 +194,7 @@ if (document.readyState === 'loading') {
     initGridHardScript();
 }
 
-// --- Chargement du backend ---
+// loadGridHard charge l'état actuel de la grille depuis le serveur
 async function loadGridHard() {
     try {
         // S'assurer que la partie est réinitialisée avant de charger
@@ -206,7 +208,7 @@ async function loadGridHard() {
     }
 }
 
-// --- Met à jour visuellement la grille ---
+// updateGrid met à jour l'affichage de la grille avec les nouvelles données
 function updateGrid(gridData) {
     // S'assurer que les couleurs sont appliquées
     const player1Color = localStorage.getItem('player1Color') || '#ff0000';
@@ -232,7 +234,7 @@ function updateGrid(gridData) {
     }
 }
 
-// --- Animation de chute ---
+// playDropAnimation anime la chute d'un jeton dans une colonne
 async function playDropAnimation(player, colIndex, grid) {
     const finalRow = findFinalRow(grid, colIndex);
     if (finalRow === -1) return;
@@ -258,6 +260,7 @@ async function playDropAnimation(player, colIndex, grid) {
     }
 }
 
+// findFinalRow trouve la ligne finale où un jeton a été placé dans une colonne
 function findFinalRow(grid, colIndex) {
     for (let row = 0; row < grid.length; row++) {
         if (grid[row][colIndex] !== "") return row;
@@ -265,6 +268,7 @@ function findFinalRow(grid, colIndex) {
     return grid.length - 1;
 }
 
+// getPlayerFromGrid récupère le joueur qui a un jeton dans une colonne
 function getPlayerFromGrid(grid, colIndex) {
     for (let row = 0; row < grid.length; row++) {
         if (grid[row][colIndex] !== "") return grid[row][colIndex];
@@ -272,7 +276,7 @@ function getPlayerFromGrid(grid, colIndex) {
     return "R";
 }
 
-// --- Ajoute 7 jetons aléatoires (R/J) au début ---
+// prefillRandomCells ajoute 7 jetons aléatoires au début de la partie en mode difficile
 function prefillRandomCells() {
     const cells = Array.from(document.querySelectorAll(".cell"));
     const totalCells = cells.length;

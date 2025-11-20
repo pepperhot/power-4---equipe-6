@@ -2,13 +2,12 @@ package game
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"power4/src/config"
 	"strconv"
 )
 
-// HandleClick gère les clics sur la grille de jeu
+// HandleClick gère le placement d'un jeton dans une colonne par le joueur
 func HandleClick(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "POST only", http.StatusMethodNotAllowed)
@@ -54,12 +53,7 @@ func HandleClick(w http.ResponseWriter, r *http.Request) {
 	}
 
 	config.Grid[row][col] = config.CurrentPlayer
-
-	_, err = config.DB.Exec("INSERT INTO grille (ligne, colonne, joueur) VALUES (?, ?, ?)", row, col, config.CurrentPlayer)
-	if err != nil {
-		log.Println("DB error:", err)
-	}
-
+	config.DB.Exec("INSERT INTO grille (ligne, colonne, joueur) VALUES (?, ?, ?)", row, col, config.CurrentPlayer)
 	if CheckWin(row, col) {
 		config.Winner = config.CurrentPlayer
 	} else {
@@ -69,36 +63,20 @@ func HandleClick(w http.ResponseWriter, r *http.Request) {
 			config.CurrentPlayer = "R"
 		}
 	}
-
 	w.Header().Set("Content-Type", "application/json")
-	
-	// Vérifier si c'est le tour de l'IA après le coup du joueur
 	isAITurn := false
-	if config.Winner == "" && config.CurrentPlayer == "J" {
-		// Vérifier si Player2Name commence par "IA" (plus simple et plus fiable)
-		if len(config.Player2Name) >= 2 && config.Player2Name[:2] == "IA" {
-			isAITurn = true
-		}
+	if config.Winner == "" && config.CurrentPlayer == "J" && len(config.Player2Name) >= 2 && config.Player2Name[:2] == "IA" {
+		isAITurn = true
 	}
-	
-	// Log pour déboguer
-	log.Printf("[DEBUG] HandleClick - CurrentPlayer: %s, Player2Name: %s, isAITurn: %v, Winner: %s", 
-		config.CurrentPlayer, config.Player2Name, isAITurn, config.Winner)
-	
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success":     true,
-		"grid":        config.Grid,
-		"current":     config.CurrentPlayer,
-		"winner":      config.Winner,
-		"isAITurn":    isAITurn,
-		"player2Name": config.Player2Name, // Debug: ajouter le nom du joueur 2
+		"success": true, "grid": config.Grid, "current": config.CurrentPlayer,
+		"winner": config.Winner, "isAITurn": isAITurn, "player2Name": config.Player2Name,
 	})
 }
 
-// GetState récupère l'état actuel du jeu depuis la base de données
+// GetState récupère l'état actuel de la grille depuis la base de données
 func GetState(w http.ResponseWriter, r *http.Request) {
 	rows, cols := config.GetDimensions()
-
 	for i := 0; i < rows; i++ {
 		for j := 0; j < cols; j++ {
 			config.Grid[i][j] = ""
@@ -106,45 +84,29 @@ func GetState(w http.ResponseWriter, r *http.Request) {
 	}
 	config.CurrentPlayer = "R"
 	config.Winner = ""
-
 	dbRows, err := config.DB.Query("SELECT ligne, colonne, joueur FROM grille ORDER BY id")
-	if err != nil {
-		log.Println("Query error:", err)
-	} else {
+	if err == nil {
 		defer dbRows.Close()
 		for dbRows.Next() {
 			var ligne, colonne int
 			var joueur string
-			if err := dbRows.Scan(&ligne, &colonne, &joueur); err == nil {
-				if ligne < rows && colonne < cols {
-					config.Grid[ligne][colonne] = joueur
-				}
+			if err := dbRows.Scan(&ligne, &colonne, &joueur); err == nil && ligne < rows && colonne < cols {
+				config.Grid[ligne][colonne] = joueur
 			}
 		}
 	}
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"grid":    config.Grid,
-		"current": config.CurrentPlayer,
-		"winner":  config.Winner,
-	})
+	json.NewEncoder(w).Encode(map[string]interface{}{"grid": config.Grid, "current": config.CurrentPlayer, "winner": config.Winner})
 }
 
-// ResetGame remet à zéro la partie
+// ResetGame réinitialise complètement la partie
 func ResetGame(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "POST only", http.StatusMethodNotAllowed)
 		return
 	}
-
 	rows, cols := config.GetDimensions()
-
-	_, err := config.DB.Exec("DELETE FROM grille")
-	if err != nil {
-		log.Println("Reset error:", err)
-	}
-
+	config.DB.Exec("DELETE FROM grille")
 	for i := 0; i < rows; i++ {
 		for j := 0; j < cols; j++ {
 			config.Grid[i][j] = ""
@@ -152,12 +114,11 @@ func ResetGame(w http.ResponseWriter, r *http.Request) {
 	}
 	config.CurrentPlayer = "R"
 	config.Winner = ""
-
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
-// CheckWin vérifie si un joueur a gagné
+// CheckWin vérifie si le dernier coup a créé un alignement gagnant
 func CheckWin(row, col int) bool {
 	rows, cols := config.GetDimensions()
 	player := config.Grid[row][col]

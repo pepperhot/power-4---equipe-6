@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 // Variable globale pour stocker si l'utilisateur est le propriétaire
 let isOwner = false;
 
-// Charger la liste des utilisateurs
+// loadUsers charge la liste de tous les utilisateurs depuis le serveur
 async function loadUsers() {
     const loading = document.getElementById('loading');
     const usersTable = document.getElementById('usersTable');
@@ -81,14 +81,14 @@ async function loadUsers() {
     }
 }
 
-// Échapper les caractères HTML pour éviter les injections
+// escapeHtml échappe les caractères HTML pour éviter les injections XSS
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
-// Ouvrir le modal d'édition
+// editUser ouvre le modal d'édition avec les informations d'un utilisateur
 function editUser(id, nickname, surname, pseudo, email, country, bio, isAdmin, avatar) {
     console.log('🔵 [EDIT] Ouverture du modal pour userId:', id, '(type:', typeof id, ')');
     document.getElementById('editUserId').value = id;
@@ -129,7 +129,7 @@ function editUser(id, nickname, surname, pseudo, email, country, bio, isAdmin, a
     document.getElementById('editModal').style.display = 'block';
 }
 
-// Fermer le modal
+// closeModal ferme le modal d'édition et réinitialise le formulaire
 function closeModal() {
     document.getElementById('editModal').style.display = 'none';
     document.getElementById('editUserForm').reset();
@@ -216,7 +216,7 @@ document.getElementById('editUserForm').addEventListener('submit', async functio
     }
 });
 
-// Supprimer un utilisateur
+// deleteUser supprime un utilisateur de la base de données après confirmation
 async function deleteUser(userId, pseudo) {
     console.log('🔴 [DELETE] Début de la suppression');
     console.log('🔴 [DELETE] userId:', userId);
@@ -266,7 +266,7 @@ async function deleteUser(userId, pseudo) {
     }
 }
 
-// Afficher un message
+// showMessage affiche un message de succès ou d'erreur temporaire
 function showMessage(text, type) {
     const messageDiv = document.getElementById('message');
     messageDiv.textContent = text;

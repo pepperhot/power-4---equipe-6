@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"power4/src/admin"
 	"power4/src/auth"
@@ -22,16 +23,13 @@ func disableCache(w http.ResponseWriter) {
 	w.Header().Set("Expires", "0")
 }
 
-// ServeStatic sert les fichiers statiques (HTML, CSS, JS)
+// ServeStatic sert les fichiers statiques (HTML, CSS, JS) avec les bons en-têtes
 func ServeStatic(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	if path == "/" {
 		path = "/login.html"
 	}
-
-	// Désactiver le cache pour le développement
 	disableCache(w)
-
 	ext := strings.ToLower(filepath.Ext(path))
 	switch ext {
 	case ".html":
@@ -41,29 +39,28 @@ func ServeStatic(w http.ResponseWriter, r *http.Request) {
 	case ".js":
 		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
 	}
-
 	http.ServeFile(w, r, "."+path)
 }
 
-// ServeLogin sert la page de login
+// ServeLogin sert la page de connexion
 func ServeLogin(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
 	http.ServeFile(w, r, "./templates/login/login.html")
 }
 
-// ServeHomepage sert la page d'accueil
+// ServeHomepage sert la page d'accueil principale
 func ServeHomepage(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
 	http.ServeFile(w, r, "./templates/homepage/homepage.html")
 }
 
-// ServeDashboard sert la page du dashboard admin
+// ServeDashboard sert la page d'administration
 func ServeDashboard(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
 	http.ServeFile(w, r, "./templates/admin/dashboard.html")
 }
 
-// GetPlayers retourne les noms des joueurs
+// GetPlayers retourne les noms des deux joueurs actuels
 func GetPlayers(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
 	w.Header().Set("Content-Type", "application/json")
@@ -73,33 +70,22 @@ func GetPlayers(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// GetWinner retourne le gagnant actuel
+// GetWinner retourne le gagnant de la partie en cours
 func GetWinner(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"winner": config.Winner,
-	})
+	json.NewEncoder(w).Encode(map[string]interface{}{"winner": config.Winner})
 }
 
-// GetProfile retourne les informations du profil utilisateur
+// GetProfile récupère les informations du profil utilisateur connecté
 func GetProfile(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
 	w.Header().Set("Content-Type", "application/json")
-
-	// Si aucun utilisateur n'est connecté, retourner des valeurs par défaut
 	if config.Player1Name == "Joueur 1" || config.Player1Name == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success":   false,
-			"message":   "Aucun utilisateur connecté",
-			"firstName": "Jean",
-			"lastName":  "Dupont",
-			"pseudo":    "jdupont",
-			"country":   "",
-			"avatar":    "",
-			"bio":       "",
-			"xp":        0,
-			"level":     1,
+			"success": false, "message": "Aucun utilisateur connecté",
+			"firstName": "Jean", "lastName": "Dupont", "pseudo": "jdupont",
+			"country": "", "avatar": "", "bio": "", "xp": 0, "level": 1,
 		})
 		return
 	}
@@ -108,38 +94,26 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 	var avatar sql.NullString
 	var bio sql.NullString
 	var xp, level int
-
 	err := config.DB.QueryRow("SELECT nickname, surname, pseudo, country, avatar, bio, COALESCE(xp, 0), COALESCE(level, 1) FROM login WHERE pseudo = ?", config.Player1Name).
 		Scan(&firstName, &lastName, &pseudo, &country, &avatar, &bio, &xp, &level)
-
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"message": "Utilisateur non trouvé",
-		})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Utilisateur non trouvé"})
 		return
 	}
-
 	avatarStr := ""
-	if avatar.Valid {
+	if avatar.Valid && avatar.String != "" {
 		avatarStr = avatar.String
+	} else {
+		avatarStr = "https://ui-avatars.com/api/?name=" + url.QueryEscape(pseudo) + "&background=667eea&color=fff&size=120&bold=true"
 	}
-
 	bioStr := ""
 	if bio.Valid {
 		bioStr = bio.String
 	}
-
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success":   true,
-		"firstName": firstName,
-		"lastName":  lastName,
-		"pseudo":    pseudo,
-		"country":   country,
-		"avatar":    avatarStr,
-		"bio":       bioStr,
-		"xp":        xp,
-		"level":     level,
+		"success": true, "firstName": firstName, "lastName": lastName,
+		"pseudo": pseudo, "country": country, "avatar": avatarStr,
+		"bio": bioStr, "xp": xp, "level": level,
 	})
 }
 
@@ -149,23 +123,14 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
 	disableCache(w)
 	w.Header().Set("Content-Type", "application/json")
-
-	// Si aucun utilisateur n'est connecté
 	if config.Player1Name == "Joueur 1" || config.Player1Name == "" {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"message": "Aucun utilisateur connecté",
-		})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Aucun utilisateur connecté"})
 		return
 	}
-
-	// Parse multipart form pour gérer l'upload de fichier
-	err := r.ParseMultipartForm(10 << 20) // 10 MB max
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		// Si pas de multipart, essayer form classique
 		r.ParseForm()
 	}
 
@@ -173,77 +138,45 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	lastName := r.FormValue("lastName")
 	newPseudo := r.FormValue("pseudo")
 	bio := r.FormValue("bio")
-	avatarData := r.FormValue("avatar") // Pour data URL base64
-
+	avatarData := r.FormValue("avatar")
 	if newPseudo == "" {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"message": "Le pseudo ne peut pas être vide",
-		})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Le pseudo ne peut pas être vide"})
 		return
 	}
-
-	// Récupérer l'ID et l'email de l'utilisateur actuel pour l'identifier de manière unique
 	var currentUserID int
 	var currentEmail string
 	err = config.DB.QueryRow("SELECT id, email FROM login WHERE pseudo = ?", config.Player1Name).Scan(&currentUserID, &currentEmail)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"message": "Utilisateur non trouvé dans la base de données",
-		})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Utilisateur non trouvé dans la base de données"})
 		return
 	}
-
-	// Vérifier si le nouveau pseudo existe déjà (sauf si c'est le même utilisateur)
 	if newPseudo != config.Player1Name {
 		var existingUserID int
 		err = config.DB.QueryRow("SELECT id FROM login WHERE pseudo = ?", newPseudo).Scan(&existingUserID)
 		if err == nil {
-			// Le pseudo existe déjà et ce n'est pas le même utilisateur
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"success": false,
-				"message": "Ce pseudo est déjà utilisé par un autre utilisateur",
-			})
+			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Ce pseudo est déjà utilisé par un autre utilisateur"})
 			return
 		}
-		// err != nil signifie que le pseudo n'existe pas, ce qui est bien
 	}
-
-	// Gérer l'upload de fichier image si présent
 	file, _, err := r.FormFile("avatarFile")
 	if err == nil {
 		defer file.Close()
-		// Lire l'image
 		imageData, err := io.ReadAll(file)
 		if err == nil {
-			// Convertir en base64 pour stockage
 			avatarData = "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(imageData)
 		}
 	}
-
-	// Mettre à jour la base de données en utilisant l'ID (plus fiable que le pseudo)
 	_, err = config.DB.Exec("UPDATE login SET nickname = ?, surname = ?, pseudo = ?, avatar = ?, bio = ? WHERE id = ?",
 		firstName, lastName, newPseudo, avatarData, bio, currentUserID)
-
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"message": "Erreur lors de la mise à jour: " + err.Error(),
-		})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Erreur lors de la mise à jour: " + err.Error()})
 		return
 	}
-
-	// Mettre à jour le pseudo en mémoire si changé
 	config.Player1Name = newPseudo
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"message": "Profil mis à jour avec succès",
-	})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Profil mis à jour avec succès"})
 }
 
-// WayLink configure toutes les routes de l'application
+// WayLink configure toutes les routes HTTP de l'application
 func WayLink() {
 	http.HandleFunc("/", ServeStatic)
 	http.HandleFunc("/login", ServeLogin)
@@ -266,8 +199,6 @@ func WayLink() {
 	http.HandleFunc("/reset", game.ResetGame)
 	http.HandleFunc("/award-xp", game.HandleAwardXP)
 	http.HandleFunc("/leaderboard", game.GetLeaderboard)
-	
-	// Routes support
 	http.HandleFunc("/support/create", support.CreateTicket)
 	http.HandleFunc("/support/tickets", support.GetUserTickets)
 	http.HandleFunc("/support/all", support.GetAllTickets)

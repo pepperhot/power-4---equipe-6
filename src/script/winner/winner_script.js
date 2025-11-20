@@ -18,6 +18,7 @@ if (document.readyState === 'loading') {
     }
 }
 
+// initWinnerPage initialise la page de victoire et gère l'attribution d'XP
 function initWinnerPage() {
     // Récupération du gagnant et scores depuis le localStorage
     const winner = localStorage.getItem("winner") || "R";
@@ -218,6 +219,7 @@ if (winner === "R" && !xpAlreadyAwarded) {
 } // Fin de la fonction initWinnerPage
 
 // Fonction pour animer la barre d'XP en bas (style Fortnite)
+// animateXPBarBottom anime la barre d'XP en bas de la page de victoire
 function animateXPBarBottom(startXP, endXP, startLevel, endLevel) {
     const xpBarFill = document.getElementById('xpBarFill');
     const xpBarLevel = document.getElementById('xpBarLevel');
@@ -318,6 +320,7 @@ function animateXPBarBottom(startXP, endXP, startLevel, endLevel) {
 }
 
 // Fonction pour afficher le pop-up de niveau atteint
+// showLevelUpPopup affiche la popup de niveau atteint sur la page de victoire
 function showLevelUpPopup(level) {
     const popup = document.getElementById('levelUpPopup');
     const levelNumber = document.getElementById('levelUpNumber');

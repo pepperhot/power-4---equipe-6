@@ -4,10 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"power4/src/config"
 )
 
-// GetLeaderboard récupère tous les utilisateurs avec leur niveau, triés par niveau décroissant
+// GetLeaderboard retourne le classement des 100 meilleurs joueurs
 func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -44,8 +45,10 @@ func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 		}
 
 		avatarStr := ""
-		if avatar.Valid {
+		if avatar.Valid && avatar.String != "" {
 			avatarStr = avatar.String
+		} else {
+			avatarStr = "https://ui-avatars.com/api/?name=" + url.QueryEscape(pseudo) + "&background=667eea&color=fff&size=120&bold=true"
 		}
 
 		leaderboard = append(leaderboard, map[string]interface{}{
