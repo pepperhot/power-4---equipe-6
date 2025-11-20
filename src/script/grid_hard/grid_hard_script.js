@@ -119,7 +119,7 @@ async function initGridHardScript() {
                     if (clickData.winner) {
                         localStorage.setItem("winner", clickData.winner);
                         setTimeout(() => {
-                            window.location.href = "/temp/winner/winner.html";
+                            window.location.href = "/templates/winner/winner.html";
                         }, 400);
                         return;
                     }
@@ -159,7 +159,7 @@ async function initGridHardScript() {
                                     if (aiData.winner) {
                                         localStorage.setItem("winner", aiData.winner);
                                         setTimeout(() => {
-                                            window.location.href = "/temp/winner/winner.html";
+                                            window.location.href = "/templates/winner/winner.html";
                                         }, 400);
                                     }
                                 }
@@ -291,5 +291,5 @@ function prefillRandomCells() {
 // --- Retour à l'accueil ---
 document.getElementById("retourBtn").addEventListener("click", async () => {
     await fetch("/reset", { method: "POST" });
-    window.location.href = "/temp/homepage/homepage.html";
+    window.location.href = "/templates/homepage/homepage.html";
 });

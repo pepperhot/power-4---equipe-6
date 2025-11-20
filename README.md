@@ -1,7 +1,5 @@
 # 🎮 Puissance 4 - Jeu en Ligne Multi-joueurs
 
-<div align="center">
-
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Go](https://img.shields.io/badge/Go-1.21+-00ADD8.svg)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1.svg)
@@ -15,7 +13,7 @@
 
 ---
 
-## 📋 Table des Matières
+## Table des Matières
 
 - [À Propos](#-à-propos)
 - [Fonctionnalités](#-fonctionnalités)
@@ -33,54 +31,54 @@
 
 ---
 
-## 🎯 À Propos
+## À Propos
 
 **Puissance 4** est une application web moderne développée en Go qui permet de jouer au célèbre jeu de stratégie Connect Four en ligne. Le projet intègre de nombreuses fonctionnalités avancées telles qu'un système d'expérience et de niveaux, un leaderboard, un système de support client, et plusieurs modes de jeu avec différents niveaux de difficulté.
 
 ### Caractéristiques Principales
 
-- 🎮 **Multi-modes de jeu** : Facile, Normal, Difficile, Gravité
-- 🤖 **Intelligence Artificielle** : 4 niveaux de difficulté (Facile, Moyen, Difficile, Impossible)
-- 👥 **Mode Multi-joueurs** : Affrontez vos amis en 1V1
-- 🏆 **Système d'XP et Niveaux** : Gagnez de l'expérience et montez en niveau
-- 📊 **Leaderboard** : Classement des meilleurs joueurs
-- 💬 **Support Client** : Système de tickets avec chat en temps réel
-- 👨‍💼 **Panel d'Administration** : Gestion complète des utilisateurs
-- 🎨 **Interface Moderne** : Design responsive avec animations fluides
+-  **Multi-modes de jeu** : Facile, Normal, Difficile, Gravité
+-  **Intelligence Artificielle** : 4 niveaux de difficulté (Facile, Moyen, Difficile, Impossible)
+-  **Mode Multi-joueurs** : Affrontez vos amis en 1V1
+-  **Système d'XP et Niveaux** : Gagnez de l'expérience et montez en niveau
+-  **Leaderboard** : Classement des meilleurs joueurs
+-  **Support Client** : Système de tickets avec chat en temps réel
+-  **Panel d'Administration** : Gestion complète des utilisateurs
+-  **Interface Moderne** : Design responsive avec animations fluides
 
 ---
 
-## ✨ Fonctionnalités
+## Fonctionnalités
 
-### 🎮 Modes de Jeu
+### Modes de Jeu
 
 - **Mode Facile** : Grille 6x7, aligner 3 jetons pour gagner
 - **Mode Normal** : Grille 6x7, aligner 4 jetons pour gagner
 - **Mode Difficile** : Grille 7x8, aligner 7 jetons pour gagner
 - **Mode Gravité** : Variante avec gravité inversée
 
-### 🤖 Intelligence Artificielle
+### Intelligence Artificielle
 
 - **Niveau Facile** : IA basique pour débuter
 - **Niveau Moyen** : IA avec stratégie modérée
 - **Niveau Difficile** : IA avancée avec anticipation
 - **Niveau Impossible** : IA quasi-invincible
 
-### 🏆 Système de Progression
+### Système de Progression
 
 - **Système d'XP** : Gagnez de l'expérience en remportant des parties
 - **Niveaux** : Progression basée sur l'XP accumulée (100 XP par niveau)
 - **Récompenses** : Plus de difficulté = plus d'XP gagnée
 - **Barre de progression** : Visualisation dynamique de votre progression
 
-### 📊 Leaderboard
+### Leaderboard
 
 - Classement en temps réel des meilleurs joueurs
 - Affichage du niveau et de l'XP
 - Design moderne avec médailles pour le top 3
 - Mise à jour automatique
 
-### 💬 Support Client
+### Support Client
 
 - **Création de tickets** : Formulaire complet avec types de questions
 - **Chat en temps réel** : Communication directe avec les administrateurs
@@ -88,7 +86,7 @@
 - **Priorités** : Faible, Moyenne, Haute, Urgente
 - **Interface Admin** : Gestion complète des tickets pour les administrateurs
 
-### 👨‍💼 Administration
+### Administration
 
 - **Dashboard Admin** : Panel de gestion complet
 - **Gestion des utilisateurs** : CRUD complet sur les comptes
@@ -97,7 +95,7 @@
 
 ---
 
-## 🛠 Technologies Utilisées
+## Technologies Utilisées
 
 ### Backend
 - **Go 1.21+** : Langage de programmation principal
@@ -116,7 +114,7 @@
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### Prérequis
 
@@ -164,7 +162,7 @@
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Configuration de la Base de Données
 
@@ -200,7 +198,7 @@ const (
 
 ---
 
-## 📁 Structure du Projet
+## Structure du Projet
 
 ```
 power-4---equipe-6/
@@ -230,24 +228,35 @@ power-4---equipe-6/
 │   ├── routes/            # Routes HTTP
 │   │   └── routes.go
 │   ├── script/            # Scripts JavaScript
-│   │   ├── dashboard_script.js
-│   │   ├── grid_*.js
-│   │   ├── homepage_srcipt.js
-│   │   ├── login_script.js
-│   │   ├── support_script.js
-│   │   └── winner_script.js
+│   │   ├── dashboard/
+│   │   │   └── dashboard_script.js
+│   │   ├── grid/
+│   │   │   └── grid_script.js
+│   │   ├── grid_gravity/
+│   │   │   └── grid_gravity_script.js
+│   │   ├── grid_hard/
+│   │   │   └── grid_hard_script.js
+│   │   ├── grideasy/
+│   │   │   └── grideasy_script.js
+│   │   ├── homepage/
+│   │   │   └── homepage_srcipt.js
+│   │   ├── login/
+│   │   │   └── login_script.js
+│   │   ├── support/
+│   │   │   └── support_script.js
+│   │   └── winner/
+│   │       └── winner_script.js
 │   └── support/           # Système de support
 │       └── support.go
 │
-├── temp/                   # Templates HTML
+├── templates/             # Templates HTML
 │   ├── admin/
 │   │   └── dashboard.html
 │   ├── grid/
 │   │   ├── grid.html
+│   │   ├── grid_hard.html
 │   │   ├── grideasy.html
 │   │   └── grid_gravity.html
-│   ├── grid_hard/
-│   │   └── grid_hard.html
 │   ├── homepage/
 │   │   └── homepage.html
 │   ├── login/
@@ -255,18 +264,20 @@ power-4---equipe-6/
 │   └── winner/
 │       └── winner.html
 │
-└── assets/                 # Ressources statiques
-    └── static/
-        ├── grid_style/
-        ├── homepage_style/
-        ├── login_style/
-        ├── support_style/
-        └── winner_style/
+├── assets/                 # Ressources statiques
+│   └── styles/
+│       ├── grid_style/
+│       ├── homepage_style/
+│       ├── login_style/
+│       ├── support_style/
+│       └── winner_style/
+│
+└── docs/                   # Documentation du projet
 ```
 
 ---
 
-## 🎮 Modes de Jeu
+## Modes de Jeu
 
 ### Mode Facile
 - **Grille** : 6 lignes × 7 colonnes
@@ -290,7 +301,7 @@ power-4---equipe-6/
 
 ---
 
-## 🏆 Système d'XP et Niveaux
+## Système d'XP et Niveaux
 
 ### Calcul de l'XP
 
@@ -316,7 +327,7 @@ power-4---equipe-6/
 
 ---
 
-## 💬 Support Client
+## Support Client
 
 ### Types de Tickets
 
@@ -349,7 +360,7 @@ power-4---equipe-6/
 
 ---
 
-## 👨‍💼 Administration
+## Administration
 
 ### Accès Admin
 
@@ -379,7 +390,7 @@ power-4---equipe-6/
 
 ---
 
-## 🗄️ Base de Données
+## Base de Données
 
 ### Table `login`
 
@@ -434,7 +445,7 @@ Stocke les messages des tickets :
 
 ---
 
-## 🚀 Utilisation
+## Utilisation
 
 ### Première Connexion
 
@@ -473,7 +484,7 @@ Stocke les messages des tickets :
 
 ---
 
-## 🎨 Design et Animations
+## Design et Animations
 
 ### Interface Moderne
 
@@ -493,7 +504,7 @@ Stocke les messages des tickets :
 
 ---
 
-## 🔧 Développement
+## Développement
 
 ### Lancer en Mode Développement
 
@@ -524,13 +535,13 @@ Toutes les routes sont définies dans `src/routes/routes.go` :
 ### Ajout de Fonctionnalités
 
 1. **Nouvelle route** : Ajouter dans `src/routes/routes.go`
-2. **Nouvelle page** : Créer le HTML dans `temp/`
-3. **Nouveau style** : Créer le CSS dans `assets/static/`
+2. **Nouvelle page** : Créer le HTML dans `templates/`
+3. **Nouveau style** : Créer le CSS dans `assets/styles/`
 4. **Nouveau script** : Créer le JS dans `src/script/`
 
 ---
 
-## 📝 Notes Importantes
+## Notes Importantes
 
 ### Sécurité
 
@@ -554,7 +565,7 @@ Toutes les routes sont définies dans `src/routes/routes.go` :
 
 ---
 
-## 🤝 Contribution
+## Contribution
 
 Ce projet a été développé dans le cadre d'un projet académique. Pour contribuer :
 
@@ -566,30 +577,14 @@ Ce projet a été développé dans le cadre d'un projet académique. Pour contri
 
 ---
 
-## 📄 License
+## License
 
 Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ---
 
-## 👥 Équipe
+## Équipe
 
 Développé par l'**Équipe 6** dans le cadre du projet B1 Ynov.
 
 ---
-
-## 🎉 Remerciements
-
-- Inspiration : Le jeu classique Connect Four
-- Technologies : Go, MySQL, HTML/CSS/JavaScript
-- Design : Interface moderne avec animations fluides
-
----
-
-<div align="center">
-
-**Fait avec ❤️ par l'Équipe 6**
-
-🎮 **Amusez-vous bien !** 🎮
-
-</div>

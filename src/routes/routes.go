@@ -48,19 +48,19 @@ func ServeStatic(w http.ResponseWriter, r *http.Request) {
 // ServeLogin sert la page de login
 func ServeLogin(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
-	http.ServeFile(w, r, "./temp/login/login.html")
+	http.ServeFile(w, r, "./templates/login/login.html")
 }
 
 // ServeHomepage sert la page d'accueil
 func ServeHomepage(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
-	http.ServeFile(w, r, "./temp/homepage/homepage.html")
+	http.ServeFile(w, r, "./templates/homepage/homepage.html")
 }
 
 // ServeDashboard sert la page du dashboard admin
 func ServeDashboard(w http.ResponseWriter, r *http.Request) {
 	disableCache(w)
-	http.ServeFile(w, r, "./temp/admin/dashboard.html")
+	http.ServeFile(w, r, "./templates/admin/dashboard.html")
 }
 
 // GetPlayers retourne les noms des joueurs

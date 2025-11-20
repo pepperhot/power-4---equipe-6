@@ -207,7 +207,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
                 const winner = checkWinnerK(newGrid,4);
                 if(winner){
                     localStorage.setItem("winner", winner);
-                    setTimeout(()=> window.location.href="/temp/winner/winner.html", 350);
+                    setTimeout(()=> window.location.href="/templates/winner/winner.html", 350);
                     return;
                 }
                 
@@ -240,13 +240,13 @@ document.addEventListener("DOMContentLoaded", async ()=>{
                                 const aiWinner = checkWinnerK(aiGrid, 4);
                                 if (aiWinner) {
                                     localStorage.setItem("winner", aiWinner);
-                                    setTimeout(()=> window.location.href="/temp/winner/winner.html", 350);
+                                    setTimeout(()=> window.location.href="/templates/winner/winner.html", 350);
                                     return;
                                 }
                                 
                                 if (aiData.winner) {
                                     localStorage.setItem("winner", aiData.winner);
-                                    setTimeout(()=> window.location.href="/temp/winner/winner.html", 350);
+                                    setTimeout(()=> window.location.href="/templates/winner/winner.html", 350);
                                 }
                             }
                         } catch (e) {

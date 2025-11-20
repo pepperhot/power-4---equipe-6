@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Puissance 4 - Mode Hard</title>
-    <link rel="stylesheet" href="/assets/static/grid_style/grid_style.css">
-    <link rel="stylesheet" href="/assets/static/homepage_style/homepage_style.css">
+    <title>Gravity Power 4</title>
+    <link rel="stylesheet" href="/assets/styles/grid_style/grid_style.css">
+    <link rel="stylesheet" href="/assets/styles/homepage_style/homepage_style.css">
     <style>
         body {
             overflow-y: auto !important;
@@ -51,7 +51,7 @@
         }
 
         .left-column {
-            flex: 0 0 200px !important;
+            flex: 0 0 240px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -63,13 +63,12 @@
             display: flex !important;
             align-items: flex-start !important;
             justify-content: center !important;
-            overflow-x: auto !important;
-            overflow-y: auto !important;
+            overflow: auto !important;
             min-width: 0;
         }
 
         .right-column {
-            flex: 0 0 200px !important;
+            flex: 0 0 240px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -260,14 +259,13 @@
         }
 
         .game-board-container {
-            padding: 30px 10px;
+            padding: 30px 20px;
             width: 100%;
             max-width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow-x: auto;
         }
 
         .game-title {
@@ -317,7 +315,7 @@
         table {
             border-collapse: separate;
             margin: 30px auto;
-            border-spacing: 8px;
+            border-spacing: 10px;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%);
             padding: 25px;
             border-radius: 24px;
@@ -331,10 +329,10 @@
         }
         
         td {
-            width: 75px !important;
-            height: 75px !important;
-            min-width: 75px;
-            min-height: 75px;
+            width: 95px !important;
+            height: 95px !important;
+            min-width: 95px;
+            min-height: 95px;
             border: none !important;
             background: linear-gradient(135deg, #5cadff 0%, #0066cc 50%, #004d99 100%) !important;
             border-radius: 16px !important;
@@ -535,19 +533,30 @@
         <div class="center-column">
             <div class="game-board-container">
                 <div class="game-title">
-                    <h1>🎮 Puissance 4</h1>
-                    <p>Mode Difficile - Grille 7x8</p>
+                    <h1>🎮 Gravity Power 4</h1>
+                    <p>Mode Gravité - Les jetons remontent vers le haut !</p>
                 </div>
                 
                 <table>
                     <tbody>
-                        <tr><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td></tr>
-                        <tr><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td></tr>
-                        <tr><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td></tr>
-                        <tr><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td></tr>
-                        <tr><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td></tr>
-                        <tr><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td></tr>
-                        <tr><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td></tr>
+                        <tr>
+                            <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        </tr>
+                        <tr>
+                            <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        </tr>
+                        <tr>
+                            <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        </tr>
+                        <tr>
+                            <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        </tr>
+                        <tr>
+                            <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        </tr>
+                        <tr>
+                            <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        </tr>
                     </tbody>
                 </table>
                 
@@ -566,7 +575,7 @@
         </div>
     </div>
     
-    <script src="/src/script/grid_hard_script.js"></script>
+    <script src="/src/script/grid_gravity/grid_gravity_script.js"></script>
     <script>
         // Mettre à jour les couleurs des indicateurs
         function updateColorIndicators() {

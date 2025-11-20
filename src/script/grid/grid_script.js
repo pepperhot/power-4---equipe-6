@@ -129,14 +129,14 @@ async function initGridScript() {
                     const localWinner = findWinnerK(clickData.grid, 4);
                     if (localWinner) {
                         localStorage.setItem("winner", localWinner);
-                        setTimeout(() => { window.location.href = "/temp/winner/winner.html"; }, 400);
+                        setTimeout(() => { window.location.href = "/templates/winner/winner.html"; }, 400);
                         return;
                     }
 
                     if (clickData.winner) {
                         localStorage.setItem("winner", clickData.winner);
                         setTimeout(() => {
-                            window.location.href = "/temp/winner/winner.html";
+                            window.location.href = "/templates/winner/winner.html";
                         }, 400);
                         return;
                     }
@@ -206,7 +206,7 @@ async function initGridScript() {
                                         console.log('[DEBUG IA] ⚠️ L\'IA a gagné!');
                                         localStorage.setItem("winner", aiData.winner);
                                         setTimeout(() => {
-                                            window.location.href = "/temp/winner/winner.html";
+                                            window.location.href = "/templates/winner/winner.html";
                                         }, 400);
                                     }
                                 } else {
@@ -273,7 +273,7 @@ async function loadGrid() {
         const localWinner = findWinnerK(data.grid || data, 4);
         if (localWinner) {
             localStorage.setItem("winner", localWinner);
-            setTimeout(() => { window.location.href = "/temp/winner/winner.html"; }, 300);
+            setTimeout(() => { window.location.href = "/templates/winner/winner.html"; }, 300);
         }
     }
     catch(e){ console.error("Erreur chargement :", e); }
@@ -381,7 +381,7 @@ async function checkWinner() {
         const data = await (await fetch('/winner')).json();
         if(data.winner){
             localStorage.setItem("winner", data.winner);
-            window.location.href="/temp/winner/winner.html";
+            window.location.href="/templates/winner/winner.html";
         }
     } catch(e){ console.error("Erreur vérif gagnant :", e); }
 }

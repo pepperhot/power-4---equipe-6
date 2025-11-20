@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!res.ok) {
                     console.error('Erreur start:', res.status);
                 }
-                window.location.href = '/temp/grid/grid.html';
+                window.location.href = '/templates/grid/grid.html';
             } catch(e) { console.error('Erreur start:', e); }
         });
     }
@@ -229,13 +229,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 // Rediriger selon le mode
                 if (selectedMode === 'hard') {
-                    window.location.href = '/temp/grid_hard/grid_hard.html';
+                    window.location.href = '/templates/grid/grid_hard.html';
                 } else if (selectedMode === 'easy') {
-                    window.location.href = '/temp/grid/grideasy.html';
+                    window.location.href = '/templates/grid/grideasy.html';
                 } else if (selectedMode === 'gravity') {
-                    window.location.href = '/temp/grid/grid_gravity.html';
+                    window.location.href = '/templates/grid/grid_gravity.html';
                 } else {
-                    window.location.href = '/temp/grid/grid.html';
+                    window.location.href = '/templates/grid/grid.html';
                 }
             } catch(e) { console.error('Erreur start:', e); }
         });

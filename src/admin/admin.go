@@ -3,6 +3,7 @@ package admin
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"power4/src/auth"
 	"power4/src/config"
@@ -156,6 +157,8 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 // UpdateUser permet à un admin de modifier un utilisateur
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	log.Println("🔵 [UPDATE] Début de UpdateUser")
+	
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -163,8 +166,41 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	// Vérifier si l'utilisateur est admin ou propriétaire
-	if config.Player1Name == "Joueur 1" || config.Player1Name == "" {
+	// Parse multipart form (FormData)
+	err := r.ParseMultipartForm(10 << 20) // 10 MB max
+	if err != nil {
+		// Si erreur, essayer avec ParseForm (pour les formulaires classiques)
+		err = r.ParseForm()
+		if err != nil {
+			log.Println("❌ [UPDATE] Erreur lors du parsing du formulaire:", err)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"message": "Erreur lors du parsing du formulaire",
+			})
+			return
+		}
+	}
+
+	// Récupérer le pseudo de l'admin connecté depuis les paramètres de requête ou le formulaire
+	pseudo := r.URL.Query().Get("pseudo")
+	log.Println("🔵 [UPDATE] pseudo depuis URL.Query:", pseudo)
+	if pseudo == "" {
+		pseudo = r.FormValue("adminPseudo") // Champ spécifique pour l'admin connecté
+		log.Println("🔵 [UPDATE] pseudo depuis FormValue(adminPseudo):", pseudo)
+	}
+	if pseudo == "" {
+		pseudo = r.FormValue("pseudo") // Fallback sur le champ pseudo
+		log.Println("🔵 [UPDATE] pseudo depuis FormValue(pseudo):", pseudo)
+	}
+	if pseudo == "" {
+		pseudo = config.Player1Name
+		log.Println("🔵 [UPDATE] pseudo depuis config.Player1Name:", pseudo)
+	}
+
+	log.Println("🔵 [UPDATE] pseudo final utilisé pour l'authentification:", pseudo)
+
+	if pseudo == "" || pseudo == "Joueur 1" {
+		log.Println("❌ [UPDATE] Pseudo vide ou invalide")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
 			"message": "Non autorisé",
@@ -174,8 +210,10 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	var isAdmin bool
 	var isOwnerUser bool
-	err := config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE), COALESCE(is_owner, FALSE) FROM login WHERE pseudo = ?", config.Player1Name).Scan(&isAdmin, &isOwnerUser)
+	err = config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE), COALESCE(is_owner, FALSE) FROM login WHERE pseudo = ?", pseudo).Scan(&isAdmin, &isOwnerUser)
+	log.Println("🔵 [UPDATE] Résultat authentification - isAdmin:", isAdmin, "isOwnerUser:", isOwnerUser, "err:", err)
 	if err != nil || (!isAdmin && !isOwnerUser) {
+		log.Println("❌ [UPDATE] Accès refusé - Admin ou Propriétaire requis, err:", err)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
 			"message": "Accès refusé - Admin ou Propriétaire requis",
@@ -183,18 +221,10 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse form
-	err = r.ParseForm()
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"message": "Erreur lors du parsing du formulaire",
-		})
-		return
-	}
-
 	userIDStr := r.FormValue("userId")
+	log.Println("🔵 [UPDATE] userId depuis FormValue:", userIDStr)
 	if userIDStr == "" {
+		log.Println("❌ [UPDATE] ID utilisateur requis - userIDStr est vide")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
 			"message": "ID utilisateur requis",
@@ -204,26 +234,39 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
+		log.Println("❌ [UPDATE] ID utilisateur invalide:", err)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
 			"message": "ID utilisateur invalide",
 		})
 		return
 	}
+	log.Println("🔵 [UPDATE] userID converti:", userID)
 
 	nickname := r.FormValue("nickname")
 	surname := r.FormValue("surname")
-	pseudo := r.FormValue("pseudo")
+	userPseudo := r.FormValue("pseudo")
 	email := r.FormValue("email")
 	country := r.FormValue("country")
 	bio := r.FormValue("bio")
 	password := r.FormValue("password")
 	isAdminStr := r.FormValue("isAdmin")
 
+	log.Println("🔵 [UPDATE] Données du formulaire:")
+	log.Println("  - nickname:", nickname)
+	log.Println("  - surname:", surname)
+	log.Println("  - userPseudo:", userPseudo)
+	log.Println("  - email:", email)
+	log.Println("  - country:", country)
+	log.Println("  - isAdminStr:", isAdminStr)
+	log.Println("  - password fourni:", password != "")
+
 	// Convertir isAdmin string en bool
 	userIsAdmin := isAdminStr == "true" || isAdminStr == "1"
+	log.Println("🔵 [UPDATE] userIsAdmin:", userIsAdmin)
 
-	if pseudo == "" {
+	if userPseudo == "" {
+		log.Println("❌ [UPDATE] Le pseudo ne peut pas être vide")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
 			"message": "Le pseudo ne peut pas être vide",
@@ -231,8 +274,10 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Vérifier si l'utilisateur actuel est le propriétaire
-	isOwnerUser, err = isOwner(config.Player1Name)
+	// Vérifier si l'utilisateur actuel (admin) est le propriétaire
+	adminPseudo := pseudo
+	isOwnerUser, err = isOwner(adminPseudo)
+	log.Println("🔵 [UPDATE] isOwnerUser après vérification:", isOwnerUser)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
@@ -273,11 +318,11 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		_, err = config.DB.Exec("UPDATE login SET nickname = ?, surname = ?, pseudo = ?, email = ?, country = ?, bio = ?, is_admin = ?, password = ? WHERE id = ?",
-			nickname, surname, pseudo, email, country, bio, userIsAdmin, hashed, userID)
+			nickname, surname, userPseudo, email, country, bio, userIsAdmin, hashed, userID)
 	} else {
 		// Mettre à jour sans changer le mot de passe
 		_, err = config.DB.Exec("UPDATE login SET nickname = ?, surname = ?, pseudo = ?, email = ?, country = ?, bio = ?, is_admin = ? WHERE id = ?",
-			nickname, surname, pseudo, email, country, bio, userIsAdmin, userID)
+			nickname, surname, userPseudo, email, country, bio, userIsAdmin, userID)
 	}
 
 	if err != nil {
@@ -296,6 +341,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 // DeleteUser permet à un admin de supprimer un utilisateur
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	log.Println("🔴 [DELETE] Début de DeleteUser")
+	
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -303,8 +350,41 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	// Vérifier si l'utilisateur est admin ou propriétaire
-	if config.Player1Name == "Joueur 1" || config.Player1Name == "" {
+	// Parse multipart form (FormData)
+	err := r.ParseMultipartForm(10 << 20) // 10 MB max
+	if err != nil {
+		// Si erreur, essayer avec ParseForm (pour les formulaires classiques)
+		err = r.ParseForm()
+		if err != nil {
+			log.Println("❌ [DELETE] Erreur lors du parsing du formulaire:", err)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"message": "Erreur lors du parsing du formulaire",
+			})
+			return
+		}
+	}
+
+	// Récupérer le pseudo de l'admin connecté depuis les paramètres de requête ou le formulaire
+	pseudo := r.URL.Query().Get("pseudo")
+	log.Println("🔴 [DELETE] pseudo depuis URL.Query:", pseudo)
+	if pseudo == "" {
+		pseudo = r.FormValue("adminPseudo") // Champ spécifique pour l'admin connecté
+		log.Println("🔴 [DELETE] pseudo depuis FormValue(adminPseudo):", pseudo)
+	}
+	if pseudo == "" {
+		pseudo = r.FormValue("pseudo") // Fallback sur le champ pseudo
+		log.Println("🔴 [DELETE] pseudo depuis FormValue(pseudo):", pseudo)
+	}
+	if pseudo == "" {
+		pseudo = config.Player1Name
+		log.Println("🔴 [DELETE] pseudo depuis config.Player1Name:", pseudo)
+	}
+
+	log.Println("🔴 [DELETE] pseudo final utilisé pour l'authentification:", pseudo)
+
+	if pseudo == "" || pseudo == "Joueur 1" {
+		log.Println("❌ [DELETE] Pseudo vide ou invalide")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
 			"message": "Non autorisé",
@@ -314,8 +394,9 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	var isAdmin bool
 	var isOwnerUser bool
-	err := config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE), COALESCE(is_owner, FALSE) FROM login WHERE pseudo = ?", config.Player1Name).Scan(&isAdmin, &isOwnerUser)
+	err = config.DB.QueryRow("SELECT COALESCE(is_admin, FALSE), COALESCE(is_owner, FALSE) FROM login WHERE pseudo = ?", pseudo).Scan(&isAdmin, &isOwnerUser)
 	if err != nil || (!isAdmin && !isOwnerUser) {
+		log.Println("❌ [DELETE] Accès refusé - Admin ou Propriétaire requis, err:", err, "isAdmin:", isAdmin, "isOwner:", isOwnerUser)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
 			"message": "Accès refusé - Admin ou Propriétaire requis",
@@ -323,18 +404,18 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse form
-	err = r.ParseForm()
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"message": "Erreur lors du parsing du formulaire",
-		})
-		return
-	}
+	log.Println("✅ [DELETE] Authentification réussie - isAdmin:", isAdmin, "isOwner:", isOwnerUser)
 
+	// Afficher tous les champs du formulaire reçus
+	log.Println("🔴 [DELETE] Tous les champs du formulaire:")
+	for key, values := range r.Form {
+		log.Printf("  - %s: %v", key, values)
+	}
+	
 	userIDStr := r.FormValue("userId")
+	log.Println("🔴 [DELETE] userId reçu:", userIDStr)
 	if userIDStr == "" {
+		log.Println("❌ [DELETE] userId est vide!")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
 			"message": "ID utilisateur requis",
@@ -344,17 +425,20 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
+		log.Println("❌ [DELETE] Erreur conversion userId:", err)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
 			"message": "ID utilisateur invalide",
 		})
 		return
 	}
+	log.Println("🔴 [DELETE] userId converti en int:", userID)
 
 	// Supprimer l'utilisateur
 	_, err = config.DB.Exec("DELETE FROM login WHERE id = ?", userID)
 
 	if err != nil {
+		log.Println("❌ [DELETE] Erreur lors de la suppression:", err)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
 			"message": "Erreur lors de la suppression: " + err.Error(),
@@ -362,6 +446,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("✅ [DELETE] Utilisateur supprimé avec succès")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
 		"message": "Utilisateur supprimé avec succès",

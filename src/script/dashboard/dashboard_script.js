@@ -90,7 +90,9 @@ function escapeHtml(text) {
 
 // Ouvrir le modal d'édition
 function editUser(id, nickname, surname, pseudo, email, country, bio, isAdmin, avatar) {
+    console.log('🔵 [EDIT] Ouverture du modal pour userId:', id, '(type:', typeof id, ')');
     document.getElementById('editUserId').value = id;
+    console.log('🔵 [EDIT] editUserId.value après assignation:', document.getElementById('editUserId').value);
     document.getElementById('editNickname').value = nickname;
     document.getElementById('editSurname').value = surname;
     document.getElementById('editPseudo').value = pseudo;
@@ -153,16 +155,26 @@ document.getElementById('editUserForm').addEventListener('submit', async functio
     const password = document.getElementById('editPassword').value;
     const passwordConfirm = document.getElementById('editPasswordConfirm').value;
 
+    console.log('🔵 [EDIT] Début de la soumission du formulaire');
+    console.log('🔵 [EDIT] userId:', userId);
+    console.log('🔵 [EDIT] password rempli:', password ? 'Oui' : 'Non');
+
     if (password !== passwordConfirm) {
+        console.log('❌ [EDIT] Les mots de passe ne correspondent pas');
         showMessage('Les mots de passe ne correspondent pas.', 'error');
         return;
     }
 
+    // Récupérer le pseudo de l'utilisateur connecté (admin)
+    const adminPseudo = localStorage.getItem('userPseudo') || '';
+    console.log('🔵 [EDIT] adminPseudo depuis localStorage:', adminPseudo);
+    
     const formData = new FormData();
     formData.append('userId', userId);
+    formData.append('adminPseudo', adminPseudo); // Pseudo de l'admin connecté pour l'authentification
     formData.append('nickname', document.getElementById('editNickname').value);
     formData.append('surname', document.getElementById('editSurname').value);
-    formData.append('pseudo', document.getElementById('editPseudo').value);
+    formData.append('pseudo', document.getElementById('editPseudo').value); // Pseudo de l'utilisateur à modifier
     formData.append('email', document.getElementById('editEmail').value);
     formData.append('country', document.getElementById('editCountry').value);
     formData.append('bio', document.getElementById('editBio').value);
@@ -172,52 +184,84 @@ document.getElementById('editUserForm').addEventListener('submit', async functio
         formData.append('password', password);
     }
     
+    // Afficher tous les champs du FormData
+    console.log('🔵 [EDIT] FormData envoyé:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`  - ${key}:`, key === 'password' ? '***' : value);
+    }
+    
     try {
+        console.log('🔵 [EDIT] Envoi de la requête POST vers /admin/user/update');
         const response = await fetch('/admin/user/update', {
             method: 'POST',
             body: formData
         });
         
+        console.log('🔵 [EDIT] Réponse reçue, status:', response.status);
         const data = await response.json();
+        console.log('🔵 [EDIT] Données de la réponse:', data);
         
         if (data.success) {
+            console.log('✅ [EDIT] Utilisateur mis à jour avec succès');
             showMessage('Utilisateur mis à jour avec succès!', 'success');
             closeModal();
             loadUsers();
         } else {
+            console.log('❌ [EDIT] Erreur:', data.message);
             showMessage('Erreur: ' + data.message, 'error');
         }
     } catch (error) {
-        console.error('Erreur lors de la mise à jour:', error);
+        console.error('❌ [EDIT] Erreur lors de la mise à jour:', error);
         showMessage('Erreur lors de la mise à jour de l\'utilisateur.', 'error');
     }
 });
 
 // Supprimer un utilisateur
 async function deleteUser(userId, pseudo) {
+    console.log('🔴 [DELETE] Début de la suppression');
+    console.log('🔴 [DELETE] userId:', userId);
+    console.log('🔴 [DELETE] pseudo utilisateur à supprimer:', pseudo);
+    
     if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur "${pseudo}" ? Cette action est irréversible.`)) {
+        console.log('🔴 [DELETE] Suppression annulée par l\'utilisateur');
         return;
     }
     
+    // Récupérer le pseudo de l'utilisateur connecté (admin)
+    const adminPseudo = localStorage.getItem('userPseudo') || '';
+    console.log('🔴 [DELETE] adminPseudo depuis localStorage:', adminPseudo);
+    
     const formData = new FormData();
     formData.append('userId', userId);
+    formData.append('adminPseudo', adminPseudo); // Pseudo de l'admin connecté pour l'authentification
+    
+    // Afficher tous les champs du FormData
+    console.log('🔴 [DELETE] FormData envoyé:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`  - ${key}:`, value);
+    }
     
     try {
+        console.log('🔴 [DELETE] Envoi de la requête POST vers /admin/user/delete');
         const response = await fetch('/admin/user/delete', {
             method: 'POST',
             body: formData
         });
         
+        console.log('🔴 [DELETE] Réponse reçue, status:', response.status);
         const data = await response.json();
+        console.log('🔴 [DELETE] Données de la réponse:', data);
         
         if (data.success) {
+            console.log('✅ [DELETE] Utilisateur supprimé avec succès');
             showMessage('Utilisateur supprimé avec succès!', 'success');
             loadUsers();
         } else {
+            console.log('❌ [DELETE] Erreur:', data.message);
             showMessage('Erreur: ' + data.message, 'error');
         }
     } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
+        console.error('❌ [DELETE] Erreur lors de la suppression:', error);
         showMessage('Erreur lors de la suppression de l\'utilisateur.', 'error');
     }
 }

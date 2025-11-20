@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gravity Power 4</title>
-    <link rel="stylesheet" href="/assets/static/grid_style/grid_style.css">
-    <link rel="stylesheet" href="/assets/static/homepage_style/homepage_style.css">
+    <title>Puissance 4 - Facile</title>
+    <link rel="stylesheet" href="/assets/styles/grid_style/grid_style.css">
+    <link rel="stylesheet" href="/assets/styles/homepage_style/homepage_style.css">
     <style>
         body {
             overflow-y: auto !important;
@@ -38,16 +38,17 @@
         }
         
         .main-layout {
-            position: relative;
-            z-index: 1;
+            position: relative !important;
+            z-index: 1 !important;
             display: flex !important;
             width: 100% !important;
             max-width: 1400px !important;
             min-height: 90vh !important;
             gap: 20px !important;
-            padding: 0 20px !important;
+            padding: 20px !important;
             flex-direction: row !important;
             overflow: auto !important;
+            box-sizing: border-box !important;
         }
 
         .left-column {
@@ -63,8 +64,11 @@
             display: flex !important;
             align-items: flex-start !important;
             justify-content: center !important;
-            overflow: auto !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
             min-width: 0;
+            padding: 10px 0 20px 0 !important;
+            max-height: 100%;
         }
 
         .right-column {
@@ -259,18 +263,24 @@
         }
 
         .game-board-container {
-            padding: 30px 20px;
+            padding: 15px 20px 40px 20px !important;
             width: 100%;
             max-width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            min-height: fit-content;
         }
 
         .game-title {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            margin-top: 0;
+            padding-top: 5px;
         }
 
         .game-title h1 {
@@ -314,7 +324,7 @@
 
         table {
             border-collapse: separate;
-            margin: 30px auto;
+            margin: 15px auto 20px auto;
             border-spacing: 10px;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 100%);
             padding: 25px;
@@ -453,7 +463,7 @@
             box-shadow: 
                 0 6px 20px rgba(102, 126, 234, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            margin: 35px auto 0;
+            margin: 25px auto 15px auto !important;
             display: block;
             letter-spacing: 0.5px;
             text-transform: uppercase;
@@ -533,8 +543,8 @@
         <div class="center-column">
             <div class="game-board-container">
                 <div class="game-title">
-                    <h1>🎮 Gravity Power 4</h1>
-                    <p>Mode Gravité - Les jetons remontent vers le haut !</p>
+                    <h1>🎮 Puissance 4</h1>
+                    <p>Mode Facile - 3 alignés pour gagner</p>
                 </div>
                 
                 <table>
@@ -575,7 +585,7 @@
         </div>
     </div>
     
-    <script src="/src/script/grid_gravity_script.js"></script>
+    <script src="/src/script/grideasy/grideasy_script.js"></script>
     <script>
         // Mettre à jour les couleurs des indicateurs
         function updateColorIndicators() {

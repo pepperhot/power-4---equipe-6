@@ -64,7 +64,7 @@ async function initGridScript() {
   // Marque explicitement le mode et la dernière grille pour la redirection après victoire
   try {
     localStorage.setItem('gameMode', 'easy');
-    localStorage.setItem('lastGrid', '/temp/grid/grideasy.html');
+    localStorage.setItem('lastGrid', '/templates/grid/grideasy.html');
   } catch(_) {}
   // Réinitialise la partie et informe le backend du mode (évite des coups résiduels en base)
   try {
@@ -109,13 +109,13 @@ async function initGridScript() {
         const winner = findWinnerK(clickData.grid, 3);
         if (winner) {
           localStorage.setItem('winner', winner);
-          setTimeout(() => window.location.href = '/temp/winner/winner.html', 350);
+          setTimeout(() => window.location.href = '/templates/winner/winner.html', 350);
           return;
         }
         // Sinon, si le serveur a son propre gagnant (4 en ligne)
         if (clickData.winner) {
           localStorage.setItem('winner', clickData.winner);
-          setTimeout(() => window.location.href = '/temp/winner/winner.html', 350);
+          setTimeout(() => window.location.href = '/templates/winner/winner.html', 350);
           return;
         }
         
@@ -151,13 +151,13 @@ async function initGridScript() {
                 const aiWinner = findWinnerK(aiData.grid, 3);
                 if (aiWinner) {
                   localStorage.setItem('winner', aiWinner);
-                  setTimeout(() => window.location.href = '/temp/winner/winner.html', 350);
+                  setTimeout(() => window.location.href = '/templates/winner/winner.html', 350);
                   return;
                 }
                 
                 if (aiData.winner) {
                   localStorage.setItem('winner', aiData.winner);
-                  setTimeout(() => window.location.href = '/temp/winner/winner.html', 350);
+                  setTimeout(() => window.location.href = '/templates/winner/winner.html', 350);
                 }
               }
             } catch (e) {
@@ -191,7 +191,7 @@ try { setInterval(async () => {
     const data = await (await fetch('/winner')).json();
     if (data && data.winner) {
       localStorage.setItem('winner', data.winner);
-      window.location.href = '/temp/winner/winner.html';
+      window.location.href = '/templates/winner/winner.html';
     }
   } catch(_) {}
 }, 1500); } catch(_) {}
@@ -208,7 +208,7 @@ async function loadGrid() {
     const winner = findWinnerK(data.grid, 3);
     if (winner) {
       localStorage.setItem('winner', winner);
-      setTimeout(() => window.location.href = '/temp/winner/winner.html', 300);
+      setTimeout(() => window.location.href = '/templates/winner/winner.html', 300);
     }
   } catch (e) {
     console.error('Erreur chargement :', e);
