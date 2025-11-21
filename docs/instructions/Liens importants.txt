@@ -1,0 +1,7 @@
+https://www.nicelydev.com/golang/serveur-web-go
+https://www.ionos.fr/digitalguide/sites-internet/developpement-web/get-vs-post/
+https://zetcode.com/golang/getpostrequest/
+https://www.w3.org/Style/Examples/011/firstcss.fr.html
+https://www.w3schools.com/html/html_css.asp
+https://htmlcolorcodes.com/fr/
+https://mybrandnewlogo.com/fr/generateur-de-palette-de-couleurs
