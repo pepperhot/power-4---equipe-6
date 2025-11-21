@@ -1,3 +1,48 @@
+// Variable globale pour le profil (sera initialisée dans DOMContentLoaded)
+let profile = { firstName: '', lastName: '', pseudo: '', avatar: '', bio: '', country: '', xp: 0, level: 1 };
+
+// Fonction pour vérifier le statut admin et afficher/masquer le bouton Dashboard
+// checkAdminStatus vérifie si l'utilisateur connecté est administrateur ou propriétaire
+// Copie exacte de la fonction support qui fonctionne
+async function checkAdminStatus() {
+    try {
+        const dashboardLink = document.getElementById('dashboardLink');
+        if (!dashboardLink) {
+            console.warn('[ADMIN] Élément dashboardLink non trouvé');
+            return;
+        }
+        
+        dashboardLink.style.display = 'none';
+        
+        const storedPseudo = localStorage.getItem('userPseudo') || '';
+        const url = storedPseudo 
+            ? `/admin/check?pseudo=${encodeURIComponent(storedPseudo)}`
+            : '/admin/check';
+
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        console.log('[ADMIN] Réponse admin check:', data);
+        
+        if (data.success && data.isAdmin) {
+            dashboardLink.style.display = 'flex';
+            console.log('[ADMIN] ✅ Bouton Dashboard Admin affiché');
+        } else {
+            dashboardLink.style.display = 'none';
+            console.log('[ADMIN] ❌ Bouton Dashboard masqué');
+        }
+    } catch (error) {
+        console.error('[ADMIN] Erreur:', error);
+        const dashboardLink = document.getElementById('dashboardLink');
+        if (dashboardLink) {
+            dashboardLink.style.display = 'none';
+        }
+    }
+}
+
+// Exposer la fonction globalement
+window.checkAdminStatus = checkAdminStatus;
+
 document.addEventListener('DOMContentLoaded', () => {
     // Navigation principale
     const btnVsAI = document.getElementById('btnVsAI');
@@ -373,12 +418,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sauvegarder le contenu original du bouton de sauvegarde
     const saveProfileBtnOriginalContent = saveProfileBtn ? saveProfileBtn.innerHTML : '';
 
-    // Variable pour stocker les données du profil
-    let profile = { firstName: '', lastName: '', pseudo: '', avatar: '', bio: '', country: '', xp: 0, level: 1 };
+    // Variable pour stocker les données du profil (utilise la variable globale définie plus haut)
+    // profile est déjà défini globalement avant DOMContentLoaded
 
     // Fonction pour charger le profil depuis la DB via /profile
     // loadProfileFromDB charge les informations du profil utilisateur depuis la base de données
-async function loadProfileFromDB() {
+    async function loadProfileFromDB() {
         console.log('[HOMEPAGE] Chargement du profil...');
         try {
             const res = await fetch('/profile');
@@ -399,12 +444,30 @@ async function loadProfileFromDB() {
                 profile.xp = data.xp || 0;
                 profile.level = data.level || 1;
                 
+                // Mettre à jour le pseudo dans localStorage pour la vérification admin
+                if (profile.pseudo) {
+                    try {
+                        localStorage.setItem('userPseudo', profile.pseudo);
+                        console.log('[HOMEPAGE] Pseudo mis à jour dans localStorage:', profile.pseudo);
+                    } catch (e) {
+                        console.warn('[HOMEPAGE] Impossible de sauvegarder le pseudo dans localStorage:', e);
+                    }
+                }
+                
                 console.log('[HOMEPAGE] XP chargé:', {
                     ancienXP: oldXP,
                     nouveauXP: profile.xp,
                     ancienNiveau: oldLevel,
                     nouveauNiveau: profile.level
                 });
+                
+                // Sauvegarder les anciennes valeurs dans localStorage pour animateXPBar
+                try {
+                    localStorage.setItem('oldXP', oldXP.toString());
+                    localStorage.setItem('oldLevel', oldLevel.toString());
+                } catch (e) {
+                    console.warn('[HOMEPAGE] Impossible de sauvegarder oldXP/oldLevel:', e);
+                }
                 
                 renderProfile();
                 
@@ -700,6 +763,10 @@ async function loadProfileFromDB() {
                     await loadProfileFromDB();
                     
                     renderProfile();
+                    
+                    // Re-vérifier le statut admin au cas où il aurait changé
+                    await checkAdminStatus();
+                    
                     closeProfileModal();
                 }
             } catch (err) {
@@ -740,14 +807,65 @@ async function loadProfileFromDB() {
     loadProfileFromDB().then(() => {
         // Animer la barre d'XP si on vient de gagner de l'XP
         animateXPBar();
+        
+        // Vérifier le statut admin après le chargement du profil
+        // pour s'assurer que le pseudo est bien chargé dans localStorage
+        console.log('[ADMIN] Appel de checkAdminStatus() après chargement du profil');
+        try {
+            checkAdminStatus().catch(err => {
+                console.error('[ADMIN] Erreur dans checkAdminStatus():', err);
+            });
+        } catch (err) {
+            console.error('[ADMIN] Erreur lors de l\'appel de checkAdminStatus():', err);
+        }
+    }).catch((err) => {
+        console.error('[HOMEPAGE] Erreur lors du chargement du profil:', err);
+        // Même en cas d'erreur, essayer de vérifier le statut admin
+        checkAdminStatus();
     });
     
     // Charger le leaderboard
     loadLeaderboard();
     
     // Vérifier le statut admin pour afficher/masquer le bouton Dashboard
-    checkAdminStatus();
+    // Fonction inline pour s'assurer qu'elle s'exécute (comme le support)
+    (async function() {
+        try {
+            const dashboardLink = document.getElementById('dashboardLink');
+            if (!dashboardLink) {
+                console.warn('[ADMIN] Élément dashboardLink non trouvé');
+                return;
+            }
+            
+            dashboardLink.style.display = 'none';
+            
+            const storedPseudo = localStorage.getItem('userPseudo') || '';
+            const url = storedPseudo 
+                ? `/admin/check?pseudo=${encodeURIComponent(storedPseudo)}`
+                : '/admin/check';
+
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            console.log('[ADMIN] Réponse admin check:', data);
+            
+            if (data.success && data.isAdmin) {
+                dashboardLink.style.display = 'flex';
+                console.log('[ADMIN] ✅ Bouton Dashboard Admin affiché');
+            } else {
+                dashboardLink.style.display = 'none';
+                console.log('[ADMIN] ❌ Bouton Dashboard masqué');
+            }
+        } catch (error) {
+            console.error('[ADMIN] Erreur:', error);
+            const dashboardLink = document.getElementById('dashboardLink');
+            if (dashboardLink) {
+                dashboardLink.style.display = 'none';
+            }
+        }
+    })();
 });
+
 
 // Fonction pour animer la barre d'XP après une victoire
 // animateXPBar anime la barre de progression XP
@@ -757,40 +875,39 @@ function animateXPBar() {
     const newLevel = localStorage.getItem('newLevel');
     
     if (xpGained && newXP && newLevel) {
-        // Récupérer l'XP actuel depuis le profil (avant la mise à jour)
-        const oldXP = profile.xp || 0;
-        const oldLevel = profile.level || 1;
+        // Récupérer l'XP actuel depuis localStorage ou utiliser 0 par défaut
+        // (profile n'est pas accessible ici car il est dans la portée du DOMContentLoaded)
+        const oldXP = parseInt(localStorage.getItem('oldXP')) || 0;
+        const oldLevel = parseInt(localStorage.getItem('oldLevel')) || 1;
         const finalXP = parseInt(newXP);
         const finalLevel = parseInt(newLevel);
         
         // Attendre un peu pour que le DOM soit prêt
         setTimeout(() => {
-            // Recharger le profil pour avoir les nouvelles valeurs
-            loadProfileFromDB().then(() => {
-                // Animer la barre d'XP
-                const xpProgressFill = document.getElementById('xpProgressFill');
-                const profileLevel = document.getElementById('profileLevel');
-                const xpRemaining = document.getElementById('xpRemaining');
-                
-                if (xpProgressFill && profileLevel) {
-                    // Animation du niveau si changement
-                    if (finalLevel > oldLevel) {
-                        animateLevelUp(oldLevel, finalLevel, profileLevel);
-                    } else {
-                        profileLevel.textContent = finalLevel;
-                    }
-                    
-                    // Animation de la barre d'XP
-                    animateXPProgress(oldXP, finalXP, finalLevel, xpProgressFill, xpRemaining);
+            // Animer directement avec les valeurs du localStorage
+            // Le profil a déjà été chargé par loadProfileFromDB() dans DOMContentLoaded
+            const xpProgressFill = document.getElementById('xpProgressFill');
+            const profileLevel = document.getElementById('profileLevel');
+            const xpRemaining = document.getElementById('xpRemaining');
+            
+            if (xpProgressFill && profileLevel) {
+                // Animation du niveau si changement
+                if (finalLevel > oldLevel) {
+                    animateLevelUp(oldLevel, finalLevel, profileLevel);
+                } else {
+                    profileLevel.textContent = finalLevel;
                 }
                 
-                // Nettoyer le localStorage après l'animation
-                setTimeout(() => {
-                    localStorage.removeItem('xpGained');
-                    localStorage.removeItem('newXP');
-                    localStorage.removeItem('newLevel');
-                }, 2000);
-            });
+                // Animation de la barre d'XP
+                animateXPProgress(oldXP, finalXP, finalLevel, xpProgressFill, xpRemaining);
+            }
+            
+            // Nettoyer le localStorage après l'animation
+            setTimeout(() => {
+                localStorage.removeItem('xpGained');
+                localStorage.removeItem('newXP');
+                localStorage.removeItem('newLevel');
+            }, 2000);
         }, 300);
     }
 }
@@ -889,44 +1006,6 @@ function showLevelUpPopup(level) {
     }
 }
 
-// Fonction pour vérifier le statut admin et afficher/masquer le bouton Dashboard
-// checkAdminStatus vérifie si l'utilisateur connecté est administrateur
-async function checkAdminStatus() {
-    try {
-        const dashboardLink = document.getElementById('dashboardLink');
-        if (!dashboardLink) return;
-        
-        // Cacher le bouton par défaut
-        dashboardLink.style.display = 'none';
-        
-        // Récupérer le pseudo depuis localStorage ou utiliser celui du backend
-        const storedPseudo = localStorage.getItem('userPseudo') || '';
-        const url = storedPseudo 
-            ? `/admin/check?pseudo=${encodeURIComponent(storedPseudo)}`
-            : '/admin/check';
-
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        console.log('Réponse admin check:', data);
-        
-        // Afficher le bouton seulement si l'utilisateur est admin
-        if (data.success && data.isAdmin) {
-            dashboardLink.style.display = 'flex';
-            console.log('Bouton Dashboard Admin affiché');
-        } else {
-            dashboardLink.style.display = 'none';
-            console.log('Utilisateur non admin - bouton Dashboard masqué');
-        }
-    } catch (error) {
-        console.error('Erreur lors de la vérification du statut admin:', error);
-        // En cas d'erreur, cacher le bouton par sécurité
-        const dashboardLink = document.getElementById('dashboardLink');
-        if (dashboardLink) {
-            dashboardLink.style.display = 'none';
-        }
-    }
-}
 
 // Charger le leaderboard
 // loadLeaderboard charge le classement des joueurs depuis le serveur

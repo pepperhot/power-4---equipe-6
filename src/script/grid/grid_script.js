@@ -67,6 +67,50 @@ function updateColorIndicators() {
     if (color2) color2.style.background = player2Color;
 }
 
+// updateGameModeText met à jour le texte du mode de jeu selon le niveau de l'IA
+async function updateGameModeText() {
+    const modeTextElement = document.getElementById('gameModeText');
+    if (!modeTextElement) return;
+    
+    try {
+        const response = await fetch('/players');
+        const data = await response.json();
+        const isPlayingAgainstAI = data.name2 && data.name2.length >= 2 && data.name2.substring(0, 2) === 'IA';
+        
+        if (isPlayingAgainstAI) {
+            // Récupérer le niveau de l'IA depuis localStorage
+            const aiLevel = localStorage.getItem('selectedAILevel') || 'medium';
+            let modeText = 'Mode Normal';
+            
+            switch(aiLevel) {
+                case 'easy':
+                    modeText = 'Mode IA - Facile';
+                    break;
+                case 'medium':
+                    modeText = 'Mode IA - Moyen';
+                    break;
+                case 'hard':
+                    modeText = 'Mode IA - Difficile';
+                    break;
+                case 'impossible':
+                    modeText = 'Mode IA - Impossible';
+                    break;
+                default:
+                    modeText = 'Mode IA';
+            }
+            
+            modeTextElement.textContent = modeText;
+        } else {
+            // Mode 1V1 normal
+            modeTextElement.textContent = 'Mode Normal';
+        }
+    } catch (e) {
+        console.error('Erreur lors de la mise à jour du texte du mode:', e);
+        // En cas d'erreur, garder le texte par défaut
+        modeTextElement.textContent = 'Mode Normal';
+    }
+}
+
 // initGridScript initialise la grille de jeu et configure les événements
 async function initGridScript() {
     // Réinitialiser la partie sur le backend avant de charger
@@ -81,6 +125,7 @@ async function initGridScript() {
     await applyPlayerColors();
     await loadPlayerNames();
     updateColorIndicators();
+    await updateGameModeText();
     const lignes = document.querySelectorAll("table tr");
 
     // --- SURVOL DE COLONNE --- (désactivé pour le nouveau design premium)
